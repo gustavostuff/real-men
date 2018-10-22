@@ -5,6 +5,9 @@ Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handleba
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/tavuntu/real-men/blob/master/LICENSE.md)
 [![Version](http://img.shields.io/:version-0.0.1-green.svg)](https://github.com/tavuntu/real-men/tags)
 
+### Install
+
+```npm i real-men```
 
 ### Simple example
 
