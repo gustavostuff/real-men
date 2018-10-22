@@ -1,0 +1,360 @@
+#!/usr/bin/env node
+'use strict';
+
+const nodeSetup = require('./node-setup');
+const utils = require('./utils');
+const renderer = require('./template-renderer');
+const names = require('./names');
+const template = require('./template');
+const yargs = require('./yargs');
+
+const exec = require('child_process').exec;
+const fs = require('fs');
+const opn = require('opn');
+
+const nameList = names.getList();
+
+// yargs params stuff:
+
+const argv = yargs.init();
+
+if(argv.open || argv.o) {
+  utils.logYellow(`WARN: --open can't be used if --no-run is present`, true);
+}
+
+let projectFolderName = argv._[0];// this is the only required command
+let defaultModelName = 'MyItem';
+let entitiesToCreate = [];
+
+if(argv.entities || argv.e) {
+  entitiesToCreate = (argv.entities || argv.e).split(',');// a controller, a route and a model for each
+  entitiesToCreate = entitiesToCreate.map(item => {
+    return utils.cap(item.toLowerCase().trim());// adjust ugly names in models
+  });
+} else {
+  entitiesToCreate = [ defaultModelName ];
+}
+
+let port = (argv.port || argv.p) || 5501;
+
+// get database name:
+
+let dbName = (argv.database || argv.d) || projectFolderName + '_DB';
+
+// templates:
+
+let tmplts = template.getList(`${__dirname}/${nameList.templatesFolder}`);
+
+// the real deal:
+
+let generateImportedRoutes = () => {
+  return entitiesToCreate.map(item => {
+    return renderer.renderTemplate(tmplts.importedRoutesLine, [{
+      pattern: nameList.targetImportedRoutes,
+      value: item}]);
+  }).join('\n');
+};
+
+let generateConnectedRoutes = () => {
+  return entitiesToCreate.map(item => {
+    return renderer.renderTemplate(tmplts.apiConnectedRoutesLine, [{
+      pattern: nameList.targetAPIConnectedRoutes,
+      value: item}]);
+  }).join('\n');
+};
+
+let renderAppTemplate = (entityRouteLines, apiConnectedRoutes) => {
+  return renderer.renderTemplate(tmplts.appTemplate, [{
+    pattern: nameList.targetImportedRoutesList,
+    value: entityRouteLines
+  }, {
+    pattern: nameList.targetAPIConnectedRoutesList,
+    value: apiConnectedRoutes
+  }, {
+    pattern: nameList.targetEntitiesList,
+    value: entitiesToCreate.map(item => `'${item}'`).join(',')
+  }]);
+};
+
+let makeAppFile = () => {
+
+  let entityRouteLines = generateImportedRoutes();
+  let apiConnectedRoutes = generateConnectedRoutes();
+
+  return new Promise((resolve, reject) => {
+    let renderApp = renderAppTemplate(entityRouteLines, apiConnectedRoutes);
+  
+    fs.writeFile(`./app.js`, renderApp, err => {
+      if(err) {
+        reject(err);
+        return;
+      }
+  
+      utils.logMagenta('--> Created app.js', true);
+      resolve();
+    });
+  });
+};
+
+let makeIndexFile = () => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(`./index.js`, renderer.renderTemplate(tmplts.indexTemplate, [{
+      pattern: nameList.targetDBName,
+      value: dbName
+    }, {
+      pattern: nameList.targetNodePort,
+      value: port
+    }]), err => {
+      if(err) {
+        reject(err);
+        return;
+      }
+  
+      utils.logMagenta('--> Created index.js', true);
+      resolve();
+    });
+  });
+};
+
+let generateController = (modelName, controllerCode) => {
+  return new Promise((resolve, reject) => {
+    let pathController = `./${nameList.controllersFolder}/${modelName}.controller.js`;
+    fs.writeFile(pathController, controllerCode, err => {
+      if(err) {
+        reject(err);
+        return;
+      }
+      utils.logCyan(`    > Controller for ${modelName} created`, true);
+      resolve();
+    });
+  });
+};
+
+let generateModel = (modelName, modelCode) => {
+  return new Promise((resolve, reject) => {
+    let pathModel = `./${nameList.modelsFolder}/${modelName}.model.js`;
+    fs.writeFile(pathModel, modelCode, err => {
+      if(err) {
+        reject(err);
+        return;
+      }
+      utils.logGreen(`    > Model for ${modelName} created`, true);
+      resolve();
+    });
+  });
+};
+
+let generateRoutes = (modelName, routesCode) => {
+  return new Promise((resolve, reject) => {
+    let pathRoutes = `./${nameList.routesFolder}/${modelName}.routes.js`;
+    fs.writeFile(pathRoutes, routesCode, err => {
+      if(err) {
+        reject(err);
+        return;
+      }
+      utils.logBlue(`    > Routes for ${modelName} created`, true);
+      resolve();
+    });
+  });
+};
+
+let generateModelTemplate = (modelName) => {
+  return renderer.renderTemplate(tmplts.modelTemplate, [{
+    pattern: nameList.targetNameJoker,
+    value: modelName
+  }]);
+};
+
+let generateControllerTemplate = (modelName) => {
+  return renderer.renderTemplate(tmplts.controllerTemplate, [{
+    pattern: nameList.targetNameJoker,
+    value: modelName
+  }]);
+};
+
+let generateRoutesTemplate = (modelName) => {
+  return renderer.renderTemplate(tmplts.routesTemplate, [{
+    pattern: nameList.targetNameJoker,
+    value: modelName
+  }]);
+};
+
+let makeWonderfulTrio = (modelName) => {
+  return new Promise((resolve, reject) => {
+    // generate code for the 3 entities:
+    let controllerCode = generateControllerTemplate(modelName);
+    let modelCode = generateModelTemplate(modelName);
+    let routesCode = generateRoutesTemplate(modelName);
+
+    generateController(modelName, controllerCode).then(() => {
+      generateModel(modelName, modelCode).then(() => {
+        generateRoutes(modelName, routesCode).then(() => {
+          resolve();
+        }).catch(error => reject(error));
+      }).catch(error => reject(error));
+    }).catch(error => reject(error));
+  });
+};
+
+let generateTrios = (entities) => {
+  return entities.map((item, index) => {
+    return new Promise((resolve, reject) => {
+      makeWonderfulTrio(entities[index]).then(() => {
+        resolve();
+      }).catch(error => {
+        reject(error);
+      });
+    });
+  });
+};
+
+let makeDirectories = () => {
+  fs.mkdirSync(`./${projectFolderName}`);
+  console.log(`--> Created directory ${projectFolderName}`);
+  process.chdir(`./${projectFolderName}`);// change to created folder
+  console.log(`--> Changed working dir to ${projectFolderName}/`);
+
+  fs.mkdirSync(`./${nameList.controllersFolder}`);
+  fs.mkdirSync(`./${nameList.modelsFolder}`);
+  fs.mkdirSync(`./${nameList.routesFolder}`);
+  fs.mkdirSync(`./${nameList.viewsFolder}`);
+  fs.mkdirSync(`./${nameList.partialsFolder}`);
+};
+
+let generateAPITester = () => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(`./${nameList.viewsFolder}/api-tester.hbs`, tmplts.apiTesterTemplate, err => {
+      if(err) {
+        reject(err);
+        return;
+      }
+
+      resolve();
+    });
+  });
+};
+
+let generateAPITesterBlock = () => {
+  return new Promise((resolve, reject) => {
+    // create template for item savers:
+    fs.writeFile(`./${nameList.partialsFolder}/api-tester-block.hbs`, tmplts.apiTesterBlock, err => {
+      if(err) {
+        reject(err);
+        return;
+      }
+
+      resolve();
+    });
+  });
+};
+
+let generateAPITesterCSS = () => {
+  // create template for item savers:
+  fs.writeFile(`./${nameList.partialsFolder}/api-tester-css.hbs`, tmplts.apiTesterCSS, err => {
+    if(err) {
+      console.error(err);
+      return;
+    }
+  });
+};
+
+let makeHTMLTemplates = () => {
+  generateAPITester().then(() => {
+    generateAPITesterBlock().then(() => {
+      generateAPITesterCSS();
+    }).catch(error => console.error(error));
+  }).catch(error => console.error(error));
+};
+
+let generateStructure = () => {
+  makeDirectories();
+  makeHTMLTemplates();
+
+  makeAppFile().then(() => {
+    makeIndexFile().then(() => {
+      Promise.all(generateTrios(entitiesToCreate)).then(() => {
+        runNodeInstalls().then(() => {
+          // everything went OK
+        }).catch(error => {
+          console.error(error);
+        });
+      }).catch(error => {
+        consolelder.error(error);
+      });
+    }).catch(error => {
+      console.error(error);
+    });
+  }).catch(error => {
+    console.error(error);
+  });
+};
+
+let listenToServer = (child) => {
+  return new Promise((resolve) => {
+    child.stdout.on('data', data => {
+      if(data == 200) {
+        console.log(`Server listening in port ${port}`);
+        if(argv.open || argv.o) {
+          opn(`http://localhost:${port}/api-tester`);
+        } else {
+          console.log(`Call http://localhost:${port}/api-tester in your browser to interact with the API`);
+          console.log(`(use --open to launch it automatically)`);
+        }
+
+        resolve();
+      }
+    });
+  });
+};
+
+let runServer = () => {
+  return new Promise((resolve, reject) => {
+    let child = exec(`./node_modules/nodemon/bin/nodemon.js index`);
+    
+    console.log('-'.repeat(utils.dottedLineLength));
+    console.log('Starting server...');
+  
+    listenToServer(child).then(() => {
+      resolve();
+    });
+  
+    child.stderr.on('data', data => console.log(data));
+    child.on('close', code => {
+      console.log(`Exited with code ${code}`);
+      reject(code);
+    });
+  });
+};
+
+let runNodeInstalls = () => {
+  return new Promise((resolve, reject) => {
+    // setup and dependencies:
+    nodeSetup.init(projectFolderName).then(() => {
+      if(argv.run === false || argv.n) {
+        console.log(`Build OK, to start the server run 'node index' inside ${projectFolderName}/`);
+        console.log(`Once the server is running, use http://localhost:${port}/api-tester to test your API`);
+      } else {
+        runServer().then(() => {
+          resolve();
+        }).catch(error => console.error(error));
+      }
+    }).catch(error => {
+      reject(error);
+    });
+  });
+};
+
+if(projectFolderName) {
+  let abortCreation = false;
+
+  if(fs.existsSync(projectFolderName)) {
+    utils.logYellow(`WARN: Folder ${projectFolderName} already exists, please use another name`, true);
+  } else {
+    generateStructure();
+  }
+  
+} else {
+  console.log('men v0.0.1');
+  console.log('Usage: men <yourProjectFolder>');
+  console.log(`men --help to see more options`);
+}

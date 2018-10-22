@@ -1,0 +1,16 @@
+<div class="api-tester-block">
+  <div>
+    <h4 class="text-center">{{entity}}</h4>
+  </div>
+  <div>
+    <input type="text" name="data" id="data-holder-for-{{entity}}" />
+    <button onclick="saveNew('{{entity}}')">/api/saveNew{{entity}}</button>
+  </div>
+  <br />
+  <div>
+    <button onclick="getAllFrom('{{entity}}')" >/api/getAllFrom{{entity}}</button>
+  </div>
+  <div>
+    <pre class="json-container" id="json-output-for-{{entity}}"></pre>
+  </div>
+</div>

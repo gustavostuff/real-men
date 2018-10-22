@@ -1,0 +1,58 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.api-tester-block {
+  border: 1px solid #aaaaaa;
+  border-radius: 4px;
+  width: 350px;
+  margin: 4px;
+  padding: 4px;
+  box-sizing: border-box;
+  display: inline-block;
+}
+
+.api-tester-block button {
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.api-tester-block button:hover {
+  background-color: #3a99ff;
+}
+
+.api-tester-block input {
+  border: 1px solid #aaaaaa;
+  border-radius: 4px;
+}
+
+.api-tester-block button, .api-tester-block input {
+  height: 30px;
+}
+
+.json-container {
+  border: 1px solid #aaaaaa;
+  border-radius: 4px;
+  padding: 4px;
+  background-color: #eeeeee;
+  margin-bottom: 0;
+  overflow: auto;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.container {
+  width: 100%;
+  overflow: auto;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+h4 {
+  margin-top: 4px;
+}
