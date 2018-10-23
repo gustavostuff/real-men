@@ -354,7 +354,7 @@ if(projectFolderName) {
   }
   
 } else {
-  console.log('men v0.0.3');
+  console.log('men v0.0.8');
   console.log('Usage: men <yourProjectFolder>');
   console.log(`men --help to see more options`);
 }

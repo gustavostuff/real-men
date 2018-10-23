@@ -14,7 +14,7 @@ manageErrors = (errors) => {
 
 installHBS = () => {
   return new Promise((resolve, reject) => {
-    console.log('     > Installing hbs...');
+    console.log('    > Installing hbs...');
 
     exec(`npm i hbs --save`, (err, stdout, stderr) => {
       manageErrors([err]).then(() => {
@@ -28,7 +28,7 @@ installHBS = () => {
 
 installNodemon = () => {
   return new Promise((resolve, reject) => {
-    console.log('     > Installing nodemon...');
+    console.log('    > Installing nodemon...');
 
     exec(`npm i nodemon --save-dev`, (err, stdout, stderr) => {
       manageErrors([err]).then(() => {
@@ -46,7 +46,7 @@ installNodemon = () => {
 
 installMongoose = () => {
   return new Promise((resolve, reject) => {
-    console.log('     > Installing mongoose...');
+    console.log('    > Installing mongoose...');
 
     exec(`npm i mongoose --save`, (err, stdout, stderr) => {
       manageErrors([err]).then(() => {
@@ -64,7 +64,7 @@ installMongoose = () => {
 
 installBodyParser = () => {
   return new Promise((resolve, reject) => {
-    console.log('     > Installing body-parser...');
+    console.log('    > Installing body-parser...');
 
     exec(`npm i body-parser --save`, (err, stdout, stderr) => {
       manageErrors([err]).then(() => {
@@ -82,7 +82,7 @@ installBodyParser = () => {
 
 installExpress = () => {
   return new Promise((resolve, reject) => {
-    console.log('     > Installing express...');
+    console.log('    > Installing express...');
 
     exec(`npm i express --save`, (err, stdout, stderr) => {
       manageErrors([err]).then(() => {
