@@ -2,7 +2,9 @@
   "name": "real-men",
   "version": "0.0.7",
   "description": "Dynamic MEN-stack boilerplate generator with a few handlebars",
-  "bin": "./men",
+  "bin": {
+    "men": "./men"
+  },
   "scripts": {
     "test": "node test"
   },
