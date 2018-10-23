@@ -18,7 +18,7 @@ const nameList = names.getList();
 
 const argv = yargs.init();
 
-if(argv.open || argv.o) {
+if((argv.run === false || argv.n) && (argv.open || argv.o)) {
   utils.logYellow(`WARN: --open can't be used if --no-run is present`, true);
 }
 
@@ -309,7 +309,7 @@ let listenToServer = (child) => {
 
 let runServer = () => {
   return new Promise((resolve, reject) => {
-    let child = exec(`./node_modules/nodemon/bin/nodemon.js index`);
+    let child = exec(`node index`);
     
     console.log('-'.repeat(utils.dottedLineLength));
     console.log('Starting server...');
@@ -354,7 +354,7 @@ if(projectFolderName) {
   }
   
 } else {
-  console.log('men v0.0.8');
+  console.log('men v0.1.1');
   console.log('Usage: men <yourProjectFolder>');
   console.log(`men --help to see more options`);
 }

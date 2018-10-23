@@ -26,31 +26,13 @@ installHBS = () => {
   });
 };
 
-installNodemon = () => {
-  return new Promise((resolve, reject) => {
-    console.log('    > Installing nodemon...');
-
-    exec(`npm i nodemon --save-dev`, (err, stdout, stderr) => {
-      manageErrors([err]).then(() => {
-        installHBS().then(() => {
-          resolve();
-        }).catch(error => {
-          reject(error);
-        });
-      }).catch(error => {
-        console.error(error);
-      });
-    });
-  });
-};
-
 installMongoose = () => {
   return new Promise((resolve, reject) => {
     console.log('    > Installing mongoose...');
 
     exec(`npm i mongoose --save`, (err, stdout, stderr) => {
       manageErrors([err]).then(() => {
-        installNodemon().then(() => {
+        installHBS().then(() => {
           resolve();
         }).catch(error => {
           reject(error);
