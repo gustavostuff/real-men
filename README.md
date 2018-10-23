@@ -3,7 +3,7 @@
 Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handlebarsjs.com/)
 
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/tavuntu/real-men/blob/master/LICENSE.md)
-[![Version](http://img.shields.io/:version-0.1.1-green.svg)](https://github.com/tavuntu/real-men/tags)
+[![Version](http://img.shields.io/:version-0.1.2-green.svg)](https://github.com/tavuntu/real-men/tags)
 
 ### Install
 
@@ -91,7 +91,7 @@ module.exports = api;
 
 ### Specifying entities
 
-If you need a specific set of entity files, this command is the right one. Many entities can be specified as long as they're separated by comas __with no spaces__:
+Many entities can be specified as long as they're separated by comas __with no spaces__:
 
 ```men test2 --entities user,cat```
 
@@ -99,7 +99,7 @@ If you need a specific set of entity files, this command is the right one. Many 
 
 ### API tester
 
-When opening the broswer in the given URL, the API tester will show. The API tester for the previous example would be:
+When opening the broswer in the given URL, the API tester will be shown. The one for the previous example would be:
 
 [![api-tester.png](https://i.postimg.cc/jj1Z6w8D/api-tester.png)](https://postimg.cc/R3c74Fxm)
 
@@ -111,6 +111,5 @@ When opening the broswer in the given URL, the API tester will show. The API tes
 * The default port to run the server is 5501, change it with ```--port```
 * Use ```--open``` to automatically open the broswer and test the API
 * __Mongo daemon (mongod) must be running to be able to create and connect to the DB__
-* This package is not ready for production yet
 * [handlebars](https://handlebarsjs.com/) is used within the generated project just for the API tester, the project can be connected to any HTTP client
 * More info with ```men --help```

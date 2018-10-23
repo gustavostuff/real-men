@@ -34,4 +34,3 @@ init = () => {
 module.exports = {
   init
 };
-

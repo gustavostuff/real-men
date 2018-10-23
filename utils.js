@@ -34,14 +34,23 @@ logBlue = (text, brighter) => {
   console.log((brighter ? '\x1b[1m' : '') + '\x1b[34m%s\x1b[0m', text);
 };
 
+handleAwaitError = (ok, error) => {
+  if(!ok) {
+    console.error(error);
+    return error;
+  }
+};
+
 module.exports = {
   cap,
   dottedLineLength: 55,
+  OK_CODE: 'ok',
   logRed,
   logGreen,
   logOrange,
   logCyan,
   logMagenta,
   logYellow,
-  logBlue
+  logBlue,
+  handleAwaitError
 };

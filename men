@@ -6,6 +6,7 @@ const utils = require('./utils');
 const renderer = require('./template-renderer');
 const names = require('./names');
 const template = require('./template');
+const to = require('./to');
 const yargs = require('./yargs');
 
 const exec = require('child_process').exec;
@@ -91,7 +92,7 @@ let makeAppFile = () => {
       }
   
       utils.logMagenta('--> Created app.js', true);
-      resolve();
+      resolve(utils.OK_CODE);
     });
   });
 };
@@ -111,7 +112,7 @@ let makeIndexFile = () => {
       }
   
       utils.logMagenta('--> Created index.js', true);
-      resolve();
+      resolve(utils.OK_CODE);
     });
   });
 };
@@ -125,7 +126,7 @@ let generateController = (modelName, controllerCode) => {
         return;
       }
       utils.logCyan(`    > Controller for ${modelName} created`, true);
-      resolve();
+      resolve(utils.OK_CODE);
     });
   });
 };
@@ -139,7 +140,7 @@ let generateModel = (modelName, modelCode) => {
         return;
       }
       utils.logGreen(`    > Model for ${modelName} created`, true);
-      resolve();
+      resolve(utils.OK_CODE);
     });
   });
 };
@@ -153,7 +154,7 @@ let generateRoutes = (modelName, routesCode) => {
         return;
       }
       utils.logBlue(`    > Routes for ${modelName} created`, true);
-      resolve();
+      resolve(utils.OK_CODE);
     });
   });
 };
@@ -180,30 +181,36 @@ let generateRoutesTemplate = (modelName) => {
 };
 
 let makeWonderfulTrio = (modelName) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async(resolve, reject) => {
+    let errCtrl, errModel, errRoutes, ok;
     // generate code for the 3 entities:
     let controllerCode = generateControllerTemplate(modelName);
     let modelCode = generateModelTemplate(modelName);
     let routesCode = generateRoutesTemplate(modelName);
 
-    generateController(modelName, controllerCode).then(() => {
-      generateModel(modelName, modelCode).then(() => {
-        generateRoutes(modelName, routesCode).then(() => {
-          resolve();
-        }).catch(error => reject(error));
-      }).catch(error => reject(error));
-    }).catch(error => reject(error));
+    [errCtrl, ok] = await to(generateController(modelName, controllerCode));
+    [errModel, ok] = await to(generateModel(modelName, modelCode));
+    [errRoutes, ok] = await to(generateRoutes(modelName, routesCode));
+    
+    if(errCtrl || errModel || errRoutes) {
+      reject([errCtrl, errModel, errRoutes]);
+    } else {
+      resolve(utils.OK_CODE);
+    }
   });
 };
 
 let generateTrios = (entities) => {
   return entities.map((item, index) => {
-    return new Promise((resolve, reject) => {
-      makeWonderfulTrio(entities[index]).then(() => {
-        resolve();
-      }).catch(error => {
-        reject(error);
-      });
+    return new Promise(async(resolve, reject) => {
+      let err, ok;
+      [err, ok] = await to(makeWonderfulTrio(entities[index]));
+
+      if(!ok) {
+        reject(err);
+      } else {
+        resolve(utils.OK_CODE);
+      }
     });
   });
 };
@@ -229,7 +236,7 @@ let generateAPITester = () => {
         return;
       }
 
-      resolve();
+      resolve(utils.OK_CODE);
     });
   });
 };
@@ -243,50 +250,54 @@ let generateAPITesterBlock = () => {
         return;
       }
 
-      resolve();
+      resolve(utils.OK_CODE);
     });
   });
 };
 
 let generateAPITesterCSS = () => {
-  // create template for item savers:
-  fs.writeFile(`./${nameList.partialsFolder}/api-tester-css.hbs`, tmplts.apiTesterCSS, err => {
-    if(err) {
-      console.error(err);
-      return;
-    }
+  return new Promise((resolve, reject) => {
+    // create template for item savers:
+    fs.writeFile(`./${nameList.partialsFolder}/api-tester-css.hbs`, tmplts.apiTesterCSS, err => {
+      if(err) {
+        reject(err);
+        return;
+      }
+
+      resolve(utils.OK_CODE);
+    });
   });
 };
 
-let makeHTMLTemplates = () => {
-  generateAPITester().then(() => {
-    generateAPITesterBlock().then(() => {
-      generateAPITesterCSS();
-    }).catch(error => console.error(error));
-  }).catch(error => console.error(error));
+let makeHTMLTemplates = async() => {
+  let err, ok;
+
+  [err, ok] = await to(generateAPITester());
+  utils.handleAwaitError(ok, err);
+
+  [err, ok] = await to(generateAPITesterBlock());
+  utils.handleAwaitError(ok, err);
+  
+  [err, ok] = await to(generateAPITesterCSS());
+  utils.handleAwaitError(ok, err);
 };
 
-let generateStructure = () => {
+let generateStructure = async() => {
+  let err, ok;
   makeDirectories();
   makeHTMLTemplates();
 
-  makeAppFile().then(() => {
-    makeIndexFile().then(() => {
-      Promise.all(generateTrios(entitiesToCreate)).then(() => {
-        runNodeInstalls().then(() => {
-          // everything went OK
-        }).catch(error => {
-          console.error(error);
-        });
-      }).catch(error => {
-        consolelder.error(error);
-      });
-    }).catch(error => {
-      console.error(error);
-    });
-  }).catch(error => {
-    console.error(error);
-  });
+  [err, ok] = await to(makeAppFile());
+  utils.handleAwaitError(ok, err);
+
+  [err, ok] = await to(makeIndexFile());
+  utils.handleAwaitError(ok, err);
+
+  [err, ok] = await to(Promise.all(generateTrios(entitiesToCreate)));
+  utils.handleAwaitError(ok, err);
+
+  [err, ok] = await to(runNodeInstalls());
+  utils.handleAwaitError(ok, err);
 };
 
 let listenToServer = (child) => {
@@ -301,52 +312,56 @@ let listenToServer = (child) => {
           console.log(`(use --open to launch it automatically)`);
         }
 
-        resolve();
+        resolve(utils.OK_CODE);
       }
     });
   });
 };
 
 let runServer = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async(resolve, reject) => {
     let child = exec(`node index`);
+    let err, ok;
     
     console.log('-'.repeat(utils.dottedLineLength));
     console.log('Starting server...');
   
-    listenToServer(child).then(() => {
-      resolve();
-    });
+    [err, ok] = await to(listenToServer(child));
   
-    child.stderr.on('data', data => console.log(data));
-    child.on('close', code => {
-      console.log(`Exited with code ${code}`);
-      reject(code);
-    });
+    if(!ok) {
+      reject(err);
+    } else {
+      resolve(utils.OK_CODE);
+      child.stderr.on('data', data => console.log(data));
+      child.on('close', code => {
+        console.log(`Exited with code ${code}`);
+        reject(code);
+      });
+    }
   });
 };
 
 let runNodeInstalls = () => {
-  return new Promise((resolve, reject) => {
+  return new Promise(async(resolve, reject) => {
+    let err, ok;
     // setup and dependencies:
-    nodeSetup.init(projectFolderName).then(() => {
-      if(argv.run === false || argv.n) {
-        console.log(`Build OK, to start the server run 'node index' inside ${projectFolderName}/`);
-        console.log(`Once the server is running, use http://localhost:${port}/api-tester to test your API`);
-      } else {
-        runServer().then(() => {
-          resolve();
-        }).catch(error => console.error(error));
-      }
-    }).catch(error => {
-      reject(error);
-    });
+    [err, ok] = await to(nodeSetup.init(projectFolderName));
+    if(!ok) { reject(err); }
+    else { resolve(utils.OK_CODE); }
+
+    if(argv.run === false || argv.n) {
+      console.log(`Build OK, to start the server run 'node index' inside ${projectFolderName}/`);
+      console.log(`Once the server is running, use http://localhost:${port}/api-tester to test your API`);
+    } else {
+      [err, ok] = await to(runServer());//last step
+      
+      if(!ok) { reject(err); }
+      else { resolve(utils.OK_CODE); }
+    }
   });
 };
 
 if(projectFolderName) {
-  let abortCreation = false;
-
   if(fs.existsSync(projectFolderName)) {
     utils.logYellow(`WARN: Folder ${projectFolderName} already exists, please use another name`, true);
   } else {
@@ -354,7 +369,7 @@ if(projectFolderName) {
   }
   
 } else {
-  console.log('men v0.1.1');
+  console.log('men v0.1.2');
   console.log('Usage: men <yourProjectFolder>');
   console.log(`men --help to see more options`);
 }
