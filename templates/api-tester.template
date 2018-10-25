@@ -17,27 +17,27 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
 <script type="text/javascript">
   function getDataHolder(entity) {
-    return document.getElementById('data-holder-for-' + entity);
+    return document.getElementById('data-holder-for-' + entity)
   }
 
   function getJsonOutput(entity) {
-    return document.getElementById('json-output-for-' + entity);
+    return document.getElementById('json-output-for-' + entity)
   }
 
   function saveNew(entity) {
-    var content = getDataHolder(entity).value;
+    var content = getDataHolder(entity).value
 
-    axios.post('/api/saveNew' + entity, { data: content }).then(function (response) {
-      var target = getJsonOutput(entity);
-      target.innerHTML = JSON.stringify(response.data, null, 2);
-    }).catch(function(error) { console.error(error); });
+    axios.post('/api/saveNew' + entity, { data: content }).then(function saveNewCB (response) {
+      var target = getJsonOutput(entity)
+      target.innerHTML = JSON.stringify(response.data, null, 2)
+    }).catch(function errorSaveNew (error) { console.error(error) })
   }
 
   function getAllFrom(entity) {
-    axios.get('/api/getAllFrom' + entity).then(function (response) {
-      var target = getJsonOutput(entity);
-      target.innerHTML = JSON.stringify(response.data, null, 2);
-    }).catch(function(error) { console.error(error); });
+    axios.get('/api/getAllFrom' + entity).then(function getAllFromCB (response) {
+      var target = getJsonOutput(entity)
+      target.innerHTML = JSON.stringify(response.data, null, 2)
+    }).catch(function errorGetAllFrom (error) { console.error(error) })
   }
 </script>
 </body>

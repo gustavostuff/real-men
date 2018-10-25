@@ -2,31 +2,31 @@
 
 // some default config here, ready for you to customize it:
 
-var express = require("express");
-var hbs = require("hbs");
-var bodyParser = require("body-parser");
+let express = require("express")
+let hbs = require("hbs")
+let bodyParser = require("body-parser")
 
-var app = express();
+let app = express()
 
-app.use(bodyParser.urlencoded({extended: false}));
-app.use(bodyParser.json());
-app.set('view engine', 'hbs');
-hbs.registerPartials(__dirname + '/views/partials');
+app.use(bodyParser.urlencoded({extended: false}))
+app.use(bodyParser.json())
+app.set('view engine', 'hbs')
+hbs.registerPartials(__dirname + '/views/partials')
 
 // import routes:
 
 __targetImportedRoutesList__
 
 // http headers:
-app.use((request, response, next) => {
-    response.header('Access-Control-Allow-Origin', '*');
+app.use(function headersExpress (request, response, next) {
+    response.header('Access-Control-Allow-Origin', '*')
     response.header('Access-Control-Allow-Headers',
-      'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Methods');
-    response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    response.header('Allow','GET, POST, PUT, DELETE, OPTIONS');
+      'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Methods')
+    response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    response.header('Allow','GET, POST, PUT, DELETE, OPTIONS')
 
-    next();
-});
+    next()
+})
 
 
 // base routes:
@@ -35,8 +35,8 @@ __targetAPIConnectedRoutesList__
 
 // special route for the API tester:
 
-app.get('/api-tester', (req, res) => {
-  res.status(200).render('api-tester', { items: [__targetEntitiesList__] });
-});
+app.get('/api-tester', function attachRoutesExpress (req, res) {
+  res.status(200).render('api-tester', { items: [__targetEntitiesList__] })
+})
 
-module.exports = app;
+module.exports = app
