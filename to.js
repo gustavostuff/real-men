@@ -5,4 +5,4 @@ to = promise => {
   .catch(err => [err]);
 }
 
-module.exports = to;
+module.exports = to

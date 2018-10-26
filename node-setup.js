@@ -104,5 +104,10 @@ let init = (folderName) => {
 }
 
 module.exports = {
-  init
+  init,
+  installExpress,
+  installBodyParser,
+  installMongoose,
+  installHBS,
+  manageErrors
 }
