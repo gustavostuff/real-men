@@ -3,7 +3,7 @@
 Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handlebarsjs.com/)
 
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/tavuntu/real-men/blob/master/LICENSE.md)
-[![Version](http://img.shields.io/:version-0.1.5-green.svg)](https://github.com/tavuntu/real-men/tags)
+[![Version](http://img.shields.io/:version-0.1.6-green.svg)](https://github.com/tavuntu/real-men/tags)
 
 ### Install
 
@@ -22,41 +22,41 @@ The controller will look like this:
 ```javascript
 'use strict'
 
-var MyItem = require('../models/MyItem.model');
+let MyItem = require('../models/MyItem.model')
 
 let getAllFromMyItem = (request, response) => {
   MyItem.find({}, (err, data) => {
-    if(err) {
+    if (err) {
       response.status(500).send({
         msg: JSON.stringify(err),
         error: 'Error in app.getAllFromMyItem()' 
-      });
+      })
     } else {
-      if(!data) {
+      if (!data) {
         response.status(404).send({
           msg: 'Nothing to show in MyItem!'
-        }); 
+        })
       } else {
-        response.status(200).send({ data });
+        response.status(200).send({ data })
       }
     }
-  });
-};
+  })
+}
 
 let saveNewMyItem = (request, response) => {
-  var newMyItem = new MyItem({ exampleData: request.body.data });
+  let newMyItem = new MyItem({ exampleData: request.body.data })
 
-  newMyItem.save(function (err) {
-    if (err) return response.status(500).send('Error saving newMyItem object');
+  newMyItem.save(function errorCtrlSaveNew (err) {
+    if (err) return response.status(500).send('Error saving new MyItem object')
     
-    response.status(200).json({error: false, msg: 'newMyItem saved correctly'})
-  });
-};
+    response.status(200).json({error: false, msg: 'new MyItem saved correctly'})
+  })
+}
 
 module.exports = {
   getAllFromMyItem,
   saveNewMyItem
-};
+}
 ```
 
 The model:
@@ -64,14 +64,14 @@ The model:
 ```javascript
 'use strict'
 
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+let mongoose = require('mongoose')
+let Schema = mongoose.Schema
 
-var MyItemSchema = Schema({
+let MyItemSchema = Schema({
     exampleData: { type: String, default: 'data example for MyItem' }
-});
+})
 
-module.exports = mongoose.model('MyItem', MyItemSchema);// creates document if not exists
+module.exports = mongoose.model('MyItem', MyItemSchema)// creates document if not exists
 ```
 
 The routes:
@@ -79,14 +79,14 @@ The routes:
 ```javascript
 'use strict'
 
-var express = require('express');
-var MyItemController = require('../controllers/MyItem.controller');
-var api = express.Router();
+let express = require('express')
+let MyItemController = require('../controllers/MyItem.controller')
+let api = express.Router()
 
-api.get('/getAllFromMyItem', MyItemController.getAllFromMyItem);
-api.post('/saveNewMyItem', MyItemController.saveNewMyItem);
+api.get('/getAllFromMyItem', MyItemController.getAllFromMyItem)
+api.post('/saveNewMyItem', MyItemController.saveNewMyItem)
 
-module.exports = api;
+module.exports = api
 ```
 
 ### Specifying entities
