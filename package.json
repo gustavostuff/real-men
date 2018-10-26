@@ -1,6 +1,6 @@
 {
   "name": "real-men",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Dynamic MEN-stack boilerplate generator with a few handlebars",
   "bin": {
     "men": "./men"
