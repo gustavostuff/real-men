@@ -1,4 +1,4 @@
-init = () => {
+let init = () => {
   let argv = require('yargs')
     .command('--entities', 'Specifies a list of entities separated by commas (no spaces!)\nalias: -e', {
       entities: {
@@ -26,11 +26,11 @@ init = () => {
       }
     })
     .locale('en')
-    .help().argv;
+    .help().argv
 
-  return argv;
-};
+  return argv
+}
 
 module.exports = {
   init
-};
+}

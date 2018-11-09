@@ -4,7 +4,11 @@ let mongoose = require('mongoose')
 let Schema = mongoose.Schema
 
 let __targetNameJoker__Schema = Schema({
-    exampleData: { type: String, default: 'data example for __targetNameJoker__' }
+  data: {
+    type: String,
+    default: 'data example for __targetNameJoker__'
+  }
 })
 
-module.exports = mongoose.model('__targetNameJoker__', __targetNameJoker__Schema)// creates document if not exists
+// creates document if not exists
+module.exports = mongoose.model('__targetNameJoker__', __targetNameJoker__Schema)

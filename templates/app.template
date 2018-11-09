@@ -2,41 +2,46 @@
 
 // some default config here, ready for you to customize it:
 
-let express = require("express")
-let hbs = require("hbs")
-let bodyParser = require("body-parser")
+const express = require("express")
+const hbs = require("hbs")
+const bodyParser = require("body-parser")
 
-let app = express()
+const app = express()
 
-app.use(bodyParser.urlencoded({extended: false}))
-app.use(bodyParser.json())
-app.set('view engine', 'hbs')
-hbs.registerPartials(__dirname + '/views/partials')
+let initExpress = () => {
+  app.use(bodyParser.urlencoded({ extended: false }))
+  app.use(bodyParser.json())
+  app.set('view engine', 'hbs')
+  hbs.registerPartials(__dirname + '/views/partials')
 
-// import routes:
+  // import routes:
 
-__targetImportedRoutesList__
+  __targetImportedRoutesList__
 
-// http headers:
-app.use(function headersExpress (request, response, next) {
-    response.header('Access-Control-Allow-Origin', '*')
-    response.header('Access-Control-Allow-Headers',
-      'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Methods')
-    response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-    response.header('Allow','GET, POST, PUT, DELETE, OPTIONS')
+  // http headers:
+  app.use(function headersExpress (request, response, next) {
+      response.header('Access-Control-Allow-Origin', '*')
+      response.header('Access-Control-Allow-Headers',
+        'Authorization, X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Allow-Request-Methods')
+      response.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+      response.header('Allow','GET, POST, PUT, DELETE, OPTIONS')
 
-    next()
-})
+      next()
+  })
 
 
-// base routes:
+  // base routes:
 
-__targetAPIConnectedRoutesList__
+  __targetAPIConnectedRoutesList__
 
-// special route for the API tester:
+  // special route for the API tester:
 
-app.get('/api-tester', function attachRoutesExpress (req, res) {
-  res.status(200).render('api-tester', { items: [__targetEntitiesList__] })
-})
+  app.get('/api-tester', function attachRoutesExpress (req, res) {
+    res.status(200).render('api-tester', { items: [__targetEntitiesList__] })
+  })
+}
 
-module.exports = app
+module.exports = {
+  app,
+  initExpress
+}

@@ -1,4 +1,4 @@
-# real-men
+[![logo-real-men.png](https://i.postimg.cc/W1PCGd0h/logo-real-men.png)](https://postimg.cc/YhbdkqnH)
 
 Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handlebarsjs.com/)
 
@@ -15,7 +15,7 @@ Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handleba
 
 The result would be:
 
-[![simple-men-setup.png](https://i.postimg.cc/9Mq1LmSJ/simple-men-setup.png)](https://postimg.cc/8JNh5ST6)
+[![test1.png](https://i.postimg.cc/8kJLMKyy/test1.png)](https://postimg.cc/V5wScRPM)
 
 The controller will look like this:
 
@@ -44,12 +44,19 @@ let getAllFromMyItem = (request, response) => {
 }
 
 let saveNewMyItem = (request, response) => {
-  let newMyItem = new MyItem({ exampleData: request.body.data })
+  let newMyItem = new MyItem({
+    data: request.body.data
+  })
 
   newMyItem.save(function errorCtrlSaveNew (err) {
-    if (err) return response.status(500).send('Error saving new MyItem object')
+    if (err) {
+      response.status(500).send('Error saving new MyItem object')
+      return
+    }
     
-    response.status(200).json({error: false, msg: 'new MyItem saved correctly'})
+    response.status(200).json({
+      error: false, msg: 'new MyItem saved! (request.body.data)'
+    })
   })
 }
 
@@ -68,10 +75,14 @@ let mongoose = require('mongoose')
 let Schema = mongoose.Schema
 
 let MyItemSchema = Schema({
-    exampleData: { type: String, default: 'data example for MyItem' }
+  data: {
+    type: String,
+    default: 'data example for MyItem'
+  }
 })
 
-module.exports = mongoose.model('MyItem', MyItemSchema)// creates document if not exists
+// creates document if not exists
+module.exports = mongoose.model('MyItem', MyItemSchema)
 ```
 
 The routes:
@@ -95,7 +106,7 @@ Many entities can be specified as long as they're separated by comas __with no s
 
 ```men test2 --entities user,cat```
 
-[![complex-men-setup.png](https://i.postimg.cc/905bK3HV/complex-men-setup.png)](https://postimg.cc/8J4Lf0Cn)
+[![test2.png](https://i.postimg.cc/JzmJw1Rg/test2.png)](https://postimg.cc/cr96wGgM)
 
 ### API tester
 

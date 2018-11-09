@@ -1,12 +1,13 @@
 renderTemplate = (template, replacements) => {
-  let rendered = template;
+  let rendered = template
 
-  for(let item of replacements) {
-    rendered = rendered.replace(item.pattern, item.value);
+  for (let item of replacements) {
+    rendered = rendered.replace(item.pattern, item.value)
   }
-  return rendered;
+
+  return rendered
 }
 
 module.exports = {
   renderTemplate
-};
+}

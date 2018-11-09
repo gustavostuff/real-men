@@ -1,22 +1,21 @@
 'use strict'
 
-let mongoose = require('mongoose')
+const { initDatabase } = require('./db')
+const { app, initExpress } = require('./app')
+
 let port = process.env.PORT || __targetNodePort__
-let app = require('./app')
 
-// this creates (if not exists) and new database with the --database (or -d) parameter
+initDatabase().then(() => {
+  initExpress()
 
-mongoose.connect('mongodb://localhost:27017/__targetDBName__',
-{ useNewUrlParser: true }, function connectDB (err, res) {
-  if (err) {
-    console.error("error connecting to __targetDBName__", err)
-  } else {
-    app.listen(port, () => {
-      if (err) {
-        console.error("Error trying to run server", err)
-      } else {
-        console.log('200')
-      }
-    })
-  }
+  app.listen(port, err => {
+    if (err) {
+      console.error("Error trying to run server", err)
+    } else {
+      console.log(200)
+    }
+
+  })
+}).catch(error => {
+  console.log(error)
 })

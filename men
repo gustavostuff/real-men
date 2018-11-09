@@ -29,8 +29,18 @@ let entitiesToCreate = []
 
 if (argv.entities || argv.e) {
   entitiesToCreate = (argv.entities || argv.e).split(',')
+
+  let invalidNames = entitiesToCreate.filter(item => utils.invalidName(item))
+  let invalid = invalidNames.length ? invalidNames.toString() : null
+  if (invalid) {
+    utils.logRed(`Invalid names: ${invalid}`, true)
+    utils.logYellow('Entity names must match [a-zA-Z_][0-9a-zA-Z_]*$', true)
+    return
+  }
+
+
   entitiesToCreate = entitiesToCreate.map(item => {
-    return utils.cap(item.toLowerCase().trim())// adjust ugly names in models
+    return utils.cap(item.trim())// capitalize entity names
   })
 } else {
   entitiesToCreate = [ defaultModelName ]
@@ -96,12 +106,26 @@ let makeAppFile = () => {
   })
 }
 
+let makeDbFile = () => {
+  return new Promise((resolve, reject) => {
+    fs.writeFile(`./db.js`, renderer.renderTemplate(tmplts.dbTemplate, [{
+      pattern: nameList.targetDBName,
+      value: dbName
+    }]), err => {
+      if (err) {
+        reject(err)
+        return
+      }
+
+      utils.logMagenta('--> Created db.js', true)
+      resolve(utils.OK_CODE)
+    })
+  })
+}
+
 let makeIndexFile = () => {
   return new Promise((resolve, reject) => {
     fs.writeFile(`./index.js`, renderer.renderTemplate(tmplts.indexTemplate, [{
-      pattern: nameList.targetDBName,
-      value: dbName
-    }, {
       pattern: nameList.targetNodePort,
       value: port
     }]), err => {
@@ -118,8 +142,8 @@ let makeIndexFile = () => {
 
 let generateController = (modelName, controllerCode) => {
   return new Promise((resolve, reject) => {
-    let pathController = `./${nameList.controllersFolder}/${modelName}.controller.js`
-    fs.writeFile(pathController, controllerCode, err => {
+    let pathCtrl = `./${nameList.controllersFolder}/${modelName}.controller.js`
+    fs.writeFile(pathCtrl, controllerCode, err => {
       if (err) {
         reject(err)
         return
@@ -185,11 +209,11 @@ let makeWonderfulTrio = (modelName) => {
     // generate code for the 3 entities:
     let controllerCode = generateControllerTemplate(modelName)
     let modelCode = generateModelTemplate(modelName)
-    let routesCode = generateRoutesTemplate(modelName);
+    let routesCode = generateRoutesTemplate(modelName)
 
-    [errCtrl, ok] = await to(generateController(modelName, controllerCode));
-    [errModel, ok] = await to(generateModel(modelName, modelCode));
-    [errRoutes, ok] = await to(generateRoutes(modelName, routesCode))
+    ;[errCtrl, ok] = await to(generateController(modelName, controllerCode))
+    ;[errModel, ok] = await to(generateModel(modelName, modelCode))
+    ;[errRoutes, ok] = await to(generateRoutes(modelName, routesCode))
 
     if (errCtrl || errModel || errRoutes || !ok) {
       reject(new Error('Eror in makeWonderfulTrio()'))
@@ -202,7 +226,7 @@ let makeWonderfulTrio = (modelName) => {
 let generateTrios = (entities) => {
   return entities.map((item, index) => {
     return new Promise(async (resolve, reject) => {
-      let err, ok;
+      let err, ok
       [err, ok] = await to(makeWonderfulTrio(entities[index]))
 
       if (!ok) {
@@ -272,33 +296,36 @@ let generateAPITesterCSS = () => {
 }
 
 let makeHTMLTemplates = async () => {
-  let err, ok;
+  let err, ok
 
-  [err, ok] = await to(generateAPITester())
-  utils.handleAwaitError(ok, err);
+  ;[err, ok] = await to(generateAPITester())
+  utils.handleAwaitError(ok, err)
 
-  [err, ok] = await to(generateAPITesterBlock())
-  utils.handleAwaitError(ok, err);
+  ;[err, ok] = await to(generateAPITesterBlock())
+  utils.handleAwaitError(ok, err)
 
-  [err, ok] = await to(generateAPITesterCSS())
+  ;[err, ok] = await to(generateAPITesterCSS())
   utils.handleAwaitError(ok, err)
 }
 
 let generateStructure = async () => {
   let err, ok
   makeDirectories()
-  makeHTMLTemplates();
+  makeHTMLTemplates()
 
-  [err, ok] = await to(makeAppFile())
-  utils.handleAwaitError(ok, err);
+  ;[err, ok] = await to(makeAppFile())
+  utils.handleAwaitError(ok, err)
 
-  [err, ok] = await to(makeIndexFile())
-  utils.handleAwaitError(ok, err);
+  ;[err, ok] = await to(makeIndexFile())
+  utils.handleAwaitError(ok, err)
 
-  [err, ok] = await to(Promise.all(generateTrios(entitiesToCreate)))
-  utils.handleAwaitError(ok, err);
+  ;[err, ok] = await to(makeDbFile())
+  utils.handleAwaitError(ok, err)
 
-  [err, ok] = await to(runNodeInstalls())
+  ;[err, ok] = await to(Promise.all(generateTrios(entitiesToCreate)))
+  utils.handleAwaitError(ok, err)
+
+  ;[err, ok] = await to(runNodeInstalls())
   utils.handleAwaitError(ok, err)
 }
 
@@ -332,7 +359,7 @@ let runServer = () => {
     let err, ok
 
     console.log('-'.repeat(utils.dottedLineLength))
-    console.log('Starting server...');
+    console.log('Starting server...')
 
     [err, ok] = await to(listenToServer(child))
 
@@ -346,7 +373,7 @@ let runServer = () => {
 
 let runNodeInstalls = () => {
   return new Promise(async (resolve, reject) => {
-    let err, ok;
+    let err, ok
     // setup and dependencies:
     [err, ok] = await to(nodeSetup.init(projectFolderName))
     if (!ok) { reject(err) } else { resolve(utils.OK_CODE) }

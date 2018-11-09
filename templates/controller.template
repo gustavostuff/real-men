@@ -22,12 +22,19 @@ let getAllFrom__targetNameJoker__ = (request, response) => {
 }
 
 let saveNew__targetNameJoker__ = (request, response) => {
-  let new__targetNameJoker__ = new __targetNameJoker__({ exampleData: request.body.data })
+  let new__targetNameJoker__ = new __targetNameJoker__({
+    data: request.body.data
+  })
 
   new__targetNameJoker__.save(function errorCtrlSaveNew (err) {
-    if (err) return response.status(500).send('Error saving new __targetNameJoker__ object')
+    if (err) {
+      response.status(500).send('Error saving new __targetNameJoker__ object')
+      return
+    }
     
-    response.status(200).json({error: false, msg: 'new __targetNameJoker__ saved correctly'})
+    response.status(200).json({
+      error: false, msg: `new __targetNameJoker__ saved! (${request.body.data})`
+    })
   })
 }
 

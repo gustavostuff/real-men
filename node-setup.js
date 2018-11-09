@@ -19,8 +19,8 @@ let installHBS = () => {
     console.log('    > Installing hbs...')
 
     exec(`npm i hbs --save`, async (err, stdout, stderr) => {
-      let error1, ok;
-      [error1, ok] = await to(manageErrors([err]))
+      let error1, ok
+      ;[error1, ok] = await to(manageErrors([err]))
 
       if (!ok || error1) {
         reject(error1)
@@ -36,9 +36,9 @@ let installMongoose = () => {
     console.log('    > Installing mongoose...')
 
     exec(`npm i mongoose --save`, async (err) => {
-      let error1, error2, ok;
-      [error1, ok] = await to(manageErrors([err]));
-      [error2, ok] = await to(installHBS())
+      let error1, error2, ok
+      ;[error1, ok] = await to(manageErrors([err]))
+      ;[error2, ok] = await to(installHBS())
 
       if (!ok || error1 || error2) {
         reject(new Error('Error while installing mongoose'))
@@ -54,9 +54,9 @@ let installBodyParser = () => {
     console.log('    > Installing body-parser...')
 
     exec(`npm i body-parser --save`, async (err) => {
-      let error1, error2, ok;
-      [error1, ok] = await to(manageErrors([err]));
-      [error2, ok] = await to(installMongoose())
+      let error1, error2, ok
+      ;[error1, ok] = await to(manageErrors([err]))
+      ;[error2, ok] = await to(installMongoose())
 
       if (!ok || error1 || error2) {
         reject(new Error('Error while installing body-parser'))
@@ -72,9 +72,9 @@ let installExpress = () => {
     console.log('    > Installing express...')
 
     exec(`npm i express --save`, async (err) => {
-      let error1, error2, ok;
-      [error1, ok] = await to(manageErrors([err]));
-      [error2, ok] = await to(installBodyParser())
+      let error1, error2, ok
+      ;[error1, ok] = await to(manageErrors([err]))
+      ;[error2, ok] = await to(installBodyParser())
 
       if (!ok || error1 || error2) {
         reject(new Error('Error while installing express'))
@@ -90,9 +90,9 @@ let init = (folderName) => {
     console.log(`--> Intalling node dependencies in ${folderName}/`)
 
     exec(`npm init -y`, async (err) => {
-      let error1, error2, ok;
-      [error1, ok] = await to(manageErrors([err]));
-      [error2, ok] = await to(installExpress())
+      let error1, error2, ok
+      ;[error1, ok] = await to(manageErrors([err]))
+      ;[error2, ok] = await to(installExpress())
 
       if (!ok || error1 || error2) {
         reject(new Error('Error while initializing project'))
@@ -104,10 +104,10 @@ let init = (folderName) => {
 }
 
 module.exports = {
-  init,
-  installExpress,
-  installBodyParser,
-  installMongoose,
-  installHBS,
-  manageErrors
+  init
+  ,installExpress
+  ,installBodyParser
+  ,installMongoose
+  ,installHBS
+  ,manageErrors
 }
