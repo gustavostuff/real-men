@@ -3,7 +3,7 @@
 Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handlebarsjs.com/)
 
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/tavuntu/real-men/blob/master/LICENSE.md)
-[![Version](http://img.shields.io/:version-0.2.2-green.svg)](https://github.com/tavuntu/real-men/tags)
+[![Version](http://img.shields.io/:version-0.2.3-green.svg)](https://github.com/tavuntu/real-men/tags)
 
 ### Install
 
@@ -55,7 +55,7 @@ let saveNewMyItem = (request, response) => {
     }
     
     response.status(200).json({
-      error: false, msg: 'new MyItem saved! (request.body.data)'
+      error: false, msg: 'new MyItem saved! (${request.body.data})'
     })
   })
 }
@@ -102,7 +102,7 @@ module.exports = api
 
 ### Specifying entities
 
-Many entities can be specified as long as they're separated by comas __with no spaces__:
+Many entities can be specified as long as they're separated by commas __with no spaces__:
 
 ```men test2 --entities user,cat```
 
