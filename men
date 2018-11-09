@@ -399,7 +399,7 @@ if (projectFolderName) {
     generateStructure()
   }
 } else {
-  console.log('men v0.2.3')
+  console.log('men v0.2.4')
   console.log('Usage: men <yourProjectFolder>')
   console.log(`men --help to see more options`)
 }

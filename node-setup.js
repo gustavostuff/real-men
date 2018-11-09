@@ -87,7 +87,7 @@ let installExpress = () => {
 
 let init = (folderName) => {
   return new Promise((resolve, reject) => {
-    console.log(`--> Intalling node dependencies in ${folderName}/`)
+    console.log(`--> Installing node dependencies in ${folderName}/`)
 
     exec(`npm init -y`, async (err) => {
       let error1, error2, ok
