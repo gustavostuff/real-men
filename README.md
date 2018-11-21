@@ -3,7 +3,7 @@
 Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handlebarsjs.com/)
 
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/tavuntu/real-men/blob/master/LICENSE.md)
-[![Version](http://img.shields.io/:npm-1.0.0-blue.svg)](https://www.npmjs.com/package/real-men)
+[![Version](http://img.shields.io/:npm-1.0.1-blue.svg)](https://www.npmjs.com/package/real-men)
 
 ### Install
 
@@ -158,6 +158,7 @@ and the one for ```men test1 -e myFile.json``` (using the json above) would look
 * The default entity name is 'MyItem' and its model has just a string attribute named ```data```
 * Entities have a small API with 2 funcions, one to save data into the collection, the other one to get all from that collection
 * Currently, the API tester does have support for String, Number, Date and Boolean types (based on the [moongoose data types](https://mongoosejs.com/docs/schematypes.html)), any type should be functional with the appropriate settings though
+* The config file types must always be a string ("String", "Number", "[]", etc.)
 * If not given, the default database to connect (or to create) will be ```<your-proyect-name>_DB```, to specify a database use ```--database```
 * The default port to run the server is 5501, change it with ```--port```
 * Use ```--open``` to automatically open the broswer and test the API

@@ -10,7 +10,11 @@
           <tr>
             <td class="text-right">{{@key}}</td>
             <td>
-              <input class="form-control" type="{{formControlTypeMapper this}}" name="{{@key}}" />
+              {{#if (formControlTypeMapper this)}}
+                <input class="form-control" type="{{formControlTypeMapper this}}" name="{{@key}}" />
+              {{else}}
+                (not supported)
+              {{/if}}
             </td>
           </tr>
           {{/each}}
