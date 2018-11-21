@@ -1,4 +1,4 @@
-const names = require('../names.js')
+const names = require('../src/names.js')
 
 describe('checks functions and values in names.js', () => {
   // check existence of properties:
@@ -55,8 +55,8 @@ describe('checks functions and values in names.js', () => {
     expect(names.getList().targetDBName).toBeTruthy()
   })
 
-  it('shoud have names.getList().targetEntitiesList', () => {
-    expect(names.getList().targetEntitiesList).toBeTruthy()
+  it('shoud have names.getList().targetEntityList', () => {
+    expect(names.getList().targetEntityList).toBeTruthy()
   })
 
   it('shoud have names.getList().targetNodePort', () => {
@@ -116,8 +116,8 @@ describe('checks functions and values in names.js', () => {
     expect(names.getList().targetDBName instanceof RegExp).toBeTruthy()
   })
 
-  it('names.getList().targetEntitiesList should be RegExp', () => {
-    expect(names.getList().targetEntitiesList instanceof RegExp).toBeTruthy()
+  it('names.getList().targetEntityList should be RegExp', () => {
+    expect(names.getList().targetEntityList instanceof RegExp).toBeTruthy()
   })
 
   it('names.getList().targetNodePort should be RegExp', () => {
@@ -139,7 +139,7 @@ describe('checks functions and values in names.js', () => {
   })
 
   it('names.getList().templatesFolder should exist', () => {
-    expect(names.getList().templatesFolder).toBe(`templates`)
+    expect(names.getList().templatesFolder).toBe(`src/templates`)
   })
 
   it('names.getList().viewsFolder should exist', () => {
@@ -174,8 +174,8 @@ describe('checks functions and values in names.js', () => {
     expect(names.getList().targetDBName.toString()).toBe(String(/__targetDBName__/g))
   })
 
-  it('names.getList().targetEntitiesList should exist', () => {
-    expect(names.getList().targetEntitiesList.toString()).toBe(String(/__targetEntitiesList__/g))
+  it('names.getList().targetEntityList should exist', () => {
+    expect(names.getList().targetEntityList.toString()).toBe(String(/__targetEntityList__/g))
   })
 
   it('names.getList().targetNodePort should exist', () => {

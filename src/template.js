@@ -5,6 +5,8 @@ let fs = require('fs')
 let getList = (folder) => {
   return {
     controllerTemplate: fs.readFileSync(`${folder}/controller.template`, 'utf-8')
+    ,saveKeyValueLineTemplate: fs.readFileSync(`${folder}/save-key-value-line.template`, 'utf-8')
+    ,modelAttributesTemplate: fs.readFileSync(`${folder}/model-attributes.template`, 'utf-8')
     ,modelTemplate: fs.readFileSync(`${folder}/model.template`, 'utf-8')
     ,routesTemplate: fs.readFileSync(`${folder}/routes.template`, 'utf-8')
     ,appTemplate: fs.readFileSync(`${folder}/app.template`, 'utf-8')

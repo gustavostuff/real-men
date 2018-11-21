@@ -3,7 +3,7 @@
 Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handlebarsjs.com/)
 
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/tavuntu/real-men/blob/master/LICENSE.md)
-[![Version](http://img.shields.io/:version-0.2.4-green.svg)](https://github.com/tavuntu/real-men/tags)
+[![Version](http://img.shields.io/:npm-1.0.0-blue.svg)](https://www.npmjs.com/package/real-men)
 
 ### Install
 
@@ -15,7 +15,7 @@ Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handleba
 
 The result would be:
 
-[![test1.png](https://i.postimg.cc/8kJLMKyy/test1.png)](https://postimg.cc/V5wScRPM)
+[![default-entity.png](https://i.postimg.cc/R0qXWtMd/default-entity.png)](https://postimg.cc/QBGpPHKK)
 
 The controller will look like this:
 
@@ -24,12 +24,12 @@ The controller will look like this:
 
 let MyItem = require('../models/MyItem.model')
 
-let getAllFromMyItem = (request, response) => {
+let getDataFromMyItem = (request, response) => {
   MyItem.find({}, (err, data) => {
     if (err) {
       response.status(500).send({
         msg: JSON.stringify(err),
-        error: 'Error in app.getAllFromMyItem()' 
+        error: 'Error in getDataFromMyItem()' 
       })
     } else {
       if (!data) {
@@ -37,32 +37,32 @@ let getAllFromMyItem = (request, response) => {
           msg: 'Nothing to show in MyItem!'
         })
       } else {
-        response.status(200).send({ data })
+        response.status(200).json(data)
       }
     }
   })
 }
 
-let saveNewMyItem = (request, response) => {
+let saveDataToMyItem = (request, response) => {
   let newMyItem = new MyItem({
-    data: request.body.data
+    data: request.body.data,
   })
 
-  newMyItem.save(function errorCtrlSaveNew (err) {
+  newMyItem.save(function errorSaveDataTo (err) {
     if (err) {
       response.status(500).send('Error saving new MyItem object')
       return
     }
     
     response.status(200).json({
-      error: false, msg: 'new MyItem saved! (${request.body.data})'
+      error: false, msg: `new MyItem saved!`
     })
   })
 }
 
 module.exports = {
-  getAllFromMyItem,
-  saveNewMyItem
+  getDataFromMyItem,
+  saveDataToMyItem
 }
 ```
 
@@ -75,10 +75,7 @@ let mongoose = require('mongoose')
 let Schema = mongoose.Schema
 
 let MyItemSchema = Schema({
-  data: {
-    type: String,
-    default: 'data example for MyItem'
-  }
+  data: { type: String, required: false },
 })
 
 // creates document if not exists
@@ -94,8 +91,8 @@ let express = require('express')
 let MyItemController = require('../controllers/MyItem.controller')
 let api = express.Router()
 
-api.get('/getAllFromMyItem', MyItemController.getAllFromMyItem)
-api.post('/saveNewMyItem', MyItemController.saveNewMyItem)
+api.get('/getDataFromMyItem', MyItemController.getDataFromMyItem)
+api.post('/saveDataToMyItem', MyItemController.saveDataToMyItem)
 
 module.exports = api
 ```
@@ -104,23 +101,67 @@ module.exports = api
 
 Many entities can be specified as long as they're separated by commas __with no spaces__:
 
-```men test2 --entities user,cat```
+```men test1 -e user,cat,cow,coffee```
 
-[![test2.png](https://i.postimg.cc/JzmJw1Rg/test2.png)](https://postimg.cc/cr96wGgM)
+[![custom-entities.png](https://i.postimg.cc/Ls7vLs5p/custom-entities.png)](https://postimg.cc/WDGMPT0W)
+
+
+### Attributes specification
+
+By providing a config file to the ```-e``` parameter, a deeper level of customization can be achieved (with no config file, models have only a ```data``` string attribute, not really useful). The config file must have a json extension and it looks like this:
+
+```json
+{
+  "entities": {
+    "user": {
+      "name": "String",
+      "email": "String",
+      "age": "Number"
+    },
+    "cat": {
+      "isItAJerk": "Boolean",
+      "catName": "String"
+    },
+    "cow": {
+      "isItHoly": "Boolean",
+      "birthday": "Date"
+    },
+    "coffee": {
+      "isDecaf": "Boolean",
+      "hasMilk": "Boolean"
+    }
+  }
+}
+```
+
+and instead of this:
+
+```men test1 -e user,cat,cow,coffee```
+
+the line would be this:
+
+```men test1 -e myFile.json```
+
 
 ### API tester
 
-When opening the broswer in the given URL, the API tester will be shown. The one for the previous example would be:
+The API tester will look different depending on the level of customization (default entity, list of words or a configuration file). For instance, the one for the command ```men test1 -e user,cat,cow,coffee``` would be this:
 
-[![api-tester.png](https://i.postimg.cc/jj1Z6w8D/api-tester.png)](https://postimg.cc/R3c74Fxm)
+[![no-file-api-tester.png](https://i.postimg.cc/SKLHGC0h/no-file-api-tester.png)](https://postimg.cc/4Kd8fKNL)
+
+and the one for ```men test1 -e myFile.json``` (using the json above) would look like this:
+
+[![complex-api-tester.png](https://i.postimg.cc/W32CYzjJ/complex-api-tester.png)](https://postimg.cc/XZzspVrV)
 
 ## Notes
 
-* The default entity name is 'MyItem'
+* The default entity name is 'MyItem' and its model has just a string attribute named ```data```
 * Entities have a small API with 2 funcions, one to save data into the collection, the other one to get all from that collection
+* Currently, the API tester does have support for String, Number, Date and Boolean types (based on the [moongoose data types](https://mongoosejs.com/docs/schematypes.html)), any type should be functional with the appropriate settings though
 * If not given, the default database to connect (or to create) will be ```<your-proyect-name>_DB```, to specify a database use ```--database```
 * The default port to run the server is 5501, change it with ```--port```
 * Use ```--open``` to automatically open the broswer and test the API
-* __Mongo daemon (mongod) must be running to be able to create and connect to the DB__
-* [handlebars](https://handlebarsjs.com/) is used within the generated project just for the API tester, the project can be connected to any HTTP client
+* Entity names and attributes must match ^[a-zA-Z_][0-9a-zA-Z_]*$
+* Entity names are always capitalized
+* __Mongo daemon (mongod) must be running to be able to create/connect to the DB__
 * More info with ```men --help```

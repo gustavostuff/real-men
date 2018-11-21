@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>real-men API tester</title>
+  <style>
+    {{> api_tester_css}}
+  </style>
+</head>
+<body>
+<h2><img alt="REAL-MEN" src="https://i.postimg.cc/W1PCGd0h/logo-real-men.png" /> API tester</h2>
+<div class="container">
+  <div class="row">
+  {{#each entities}}
+    <div class="col">
+    {{> api_tester_block entityKey=@key entity=this}}
+    </div>
+  {{/each}}
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
+<script type="text/javascript">
+  function getJsonOutput(entity) {
+    return document.getElementById('json-output-for-' + entity)
+  }
+
+  function saveDataTo(form, entity) {
+    var data = {}
+    // get form data:
+    for (let control of form) {
+      if (control.type != 'submit') {
+        if (control.type == 'checkbox') {
+          data[control.name] = control.checked
+        } else {
+          data[control.name] = control.value
+        }
+      }
+    }
+
+    if (confirm('Do you want to save this?\n' + JSON.stringify(data, null, 2))) {
+      axios.post('/api/saveDataTo' + entity, data).then(function saveDataToCB (response) {
+        var target = getJsonOutput(entity)
+        getDataFrom(entity)
+      }).catch(function errorSaveDataTo (error) { console.error(error) })
+    }
+
+    return false// avoid form submission (page refresh)
+  }
+
+  function getDataFrom(entity) {
+    axios.get('/api/getDataFrom' + entity).then(function getDataFromCB (response) {
+      var target = getJsonOutput(entity)
+      target.innerHTML = JSON.stringify(response.data, null, 2)
+    }).catch(function errorgetDataFrom (error) { console.error(error) })
+  }
+
+  // load data when loading the page:
+  {{#each entities}}
+  getDataFrom('{{@key}}')
+  {{/each}}
+</script>
+</body>
+</html>

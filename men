@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 'use strict'
 
-const nodeSetup = require('./node-setup')
-const utils = require('./utils')
-const renderer = require('./template-renderer')
-const names = require('./names')
-const template = require('./template')
-const to = require('./to')
-const yargs = require('./yargs')
+const nodeSetup = require('./src/node-setup')
+const utils = require('./src/utils')
+const renderer = require('./src/template-renderer')
+const names = require('./src/names')
+const template = require('./src/template')
+const yargs = require('./src/yargs')
+const log = require('npmlog')
+const { getErrors } = require('./src/entity-validator')
 
 const exec = require('child_process').exec
 const fs = require('fs')
@@ -15,35 +16,63 @@ const opn = require('opn')
 
 const nameList = names.getList()
 
+log.enableColor()
+
 // yargs params stuff:
 
 const argv = yargs.init()
 
 if ((argv.run === false || argv.n) && (argv.open || argv.o)) {
-  utils.logYellow(`WARN: --open can't be used if --no-run is present`, true)
+  log.warn(utils.yellow(`--open can't be used if --no-run is present`, true))
 }
 
 let projectFolderName = argv._[0]// this is the only required command
 let defaultModelName = 'MyItem'
-let entitiesToCreate = []
+let entitiesDefinition = []
+let entities = (argv.entities || argv.e).toString()
 
-if (argv.entities || argv.e) {
-  entitiesToCreate = (argv.entities || argv.e).split(',')
+if (entities) {  
 
-  let invalidNames = entitiesToCreate.filter(item => utils.invalidName(item))
-  let invalid = invalidNames.length ? invalidNames.toString() : null
-  if (invalid) {
-    utils.logRed(`Invalid names: ${invalid}`, true)
-    utils.logYellow('Entity names must match [a-zA-Z_][0-9a-zA-Z_]*$', true)
-    return
+  // just a bunch of names separated by commas:
+  if (!entities.toLowerCase().endsWith('.json')) {
+
+    entitiesDefinition = entities.split(',')
+
+    let obj = { entities: {} }
+    for (let name of entitiesDefinition) {
+      obj.entities[name] = { data: 'String' }
+    }
+
+    entitiesDefinition = obj
+
+  } else {// advanced config file:
+    let content = fs.readFileSync('data.json', 'utf8')
+    entitiesDefinition = JSON.parse(content)
   }
 
+  // manage errors in entities definition:
+  let errors = getErrors(entitiesDefinition)
 
-  entitiesToCreate = entitiesToCreate.map(item => {
-    return utils.cap(item.trim())// capitalize entity names
-  })
+  if (errors) {
+    log.error('Errors found:\n' + errors)
+    return
+  } else {
+    // capitalize entity names:
+    let ents = entitiesDefinition.entities
+    let formatted = {}
+    Object.keys(ents).forEach(key => {
+      formatted[utils.cap(key)] = ents[key]
+    })
+
+    entitiesDefinition.entities = formatted
+  }
 } else {
-  entitiesToCreate = [ defaultModelName ]
+  // default entity config:
+  entitiesDefinition = {
+    entities: {
+      [defaultModelName]: { data: 'String' }
+    }
+  }
 }
 
 let port = (argv.port || argv.p) || 5501
@@ -58,23 +87,44 @@ let tmplts = template.getList(`${__dirname}/${nameList.templatesFolder}`)
 
 // the real deal:
 
-let generateImportedRoutes = () => {
-  return entitiesToCreate.map(item => {
+let makeImportedRoutes = entities => {
+  return Object.keys(entities).map(item => {
     return renderer.renderTemplate(tmplts.importedRoutesLine, [{
       pattern: nameList.targetImportedRoutes,
       value: item }])
-  }).join('\n')
+  }).join('\n\t')
 }
 
-let generateConnectedRoutes = () => {
-  return entitiesToCreate.map(item => {
+let makeConnectedRoutes = entities => {
+  return Object.keys(entities).map(item => {
     return renderer.renderTemplate(tmplts.apiConnectedRoutesLine, [{
       pattern: nameList.targetAPIConnectedRoutes,
       value: item }])
-  }).join('\n')
+  }).join('\n\t')
 }
 
-let renderAppTemplate = (entityRouteLines, apiConnectedRoutes) => {
+let makeSaveLinesCode = entity => {
+  return Object.keys(entity).map(key => {
+    return renderer.renderTemplate(tmplts.saveKeyValueLineTemplate, [{
+      pattern: nameList.savePropertyName,
+      value: key
+    }])
+  }).join('\n\t\t')
+}
+
+let makeModelAttributeLines = entity => {
+  return Object.keys(entity).map(key => {
+    return renderer.renderTemplate(tmplts.modelAttributesTemplate, [{
+      pattern: nameList.modelAttributeName,
+      value: key
+    }, {
+      pattern: nameList.modelAttributeType,
+      value: entity[key]
+    }])
+  }).join('\n\t')
+}
+
+let renderAppTemplate = (entityRouteLines, apiConnectedRoutes, entities) => {
   return renderer.renderTemplate(tmplts.appTemplate, [{
     pattern: nameList.targetImportedRoutesList,
     value: entityRouteLines
@@ -82,17 +132,17 @@ let renderAppTemplate = (entityRouteLines, apiConnectedRoutes) => {
     pattern: nameList.targetAPIConnectedRoutesList,
     value: apiConnectedRoutes
   }, {
-    pattern: nameList.targetEntitiesList,
-    value: entitiesToCreate.map(item => `'${item}'`).join(',')
+    pattern: nameList.targetEntityList,
+    value: JSON.stringify(entities)
   }])
 }
 
-let makeAppFile = () => {
-  let entityRouteLines = generateImportedRoutes()
-  let apiConnectedRoutes = generateConnectedRoutes()
+let makeAppFile = entities => {
+  let entityRouteLines = makeImportedRoutes(entities)
+  let apiConnectedRoutes = makeConnectedRoutes(entities)
 
   return new Promise((resolve, reject) => {
-    let renderApp = renderAppTemplate(entityRouteLines, apiConnectedRoutes)
+    let renderApp = renderAppTemplate(entityRouteLines, apiConnectedRoutes, entities)
 
     fs.writeFile(`./app.js`, renderApp, err => {
       if (err) {
@@ -100,7 +150,7 @@ let makeAppFile = () => {
         return
       }
 
-      utils.logMagenta('--> Created app.js', true)
+      log.info(utils.white('--> Created app.js', true))
       resolve(utils.OK_CODE)
     })
   })
@@ -117,7 +167,7 @@ let makeDbFile = () => {
         return
       }
 
-      utils.logMagenta('--> Created db.js', true)
+      log.info(utils.white('--> Created db.js', true))
       resolve(utils.OK_CODE)
     })
   })
@@ -134,13 +184,13 @@ let makeIndexFile = () => {
         return
       }
 
-      utils.logMagenta('--> Created index.js', true)
+      log.info(utils.white('--> Created index.js', true))
       resolve(utils.OK_CODE)
     })
   })
 }
 
-let generateController = (modelName, controllerCode) => {
+let makeController = (modelName, controllerCode) => {
   return new Promise((resolve, reject) => {
     let pathCtrl = `./${nameList.controllersFolder}/${modelName}.controller.js`
     fs.writeFile(pathCtrl, controllerCode, err => {
@@ -148,13 +198,13 @@ let generateController = (modelName, controllerCode) => {
         reject(err)
         return
       }
-      utils.logCyan(`    > Controller for ${modelName} created`, true)
+      log.info(utils.green(`    > Controller for ${modelName} created`, true))
       resolve(utils.OK_CODE)
     })
   })
 }
 
-let generateModel = (modelName, modelCode) => {
+let makeModel = (modelName, modelCode) => {
   return new Promise((resolve, reject) => {
     let pathModel = `./${nameList.modelsFolder}/${modelName}.model.js`
     fs.writeFile(pathModel, modelCode, err => {
@@ -162,13 +212,13 @@ let generateModel = (modelName, modelCode) => {
         reject(err)
         return
       }
-      utils.logGreen(`    > Model for ${modelName} created`, true)
+      log.info(utils.blue(`    > Model for ${modelName} created`, true))
       resolve(utils.OK_CODE)
     })
   })
 }
 
-let generateRoutes = (modelName, routesCode) => {
+let makeRoutes = (modelName, routesCode) => {
   return new Promise((resolve, reject) => {
     let pathRoutes = `./${nameList.routesFolder}/${modelName}.routes.js`
     fs.writeFile(pathRoutes, routesCode, err => {
@@ -176,63 +226,68 @@ let generateRoutes = (modelName, routesCode) => {
         reject(err)
         return
       }
-      utils.logBlue(`    > Routes for ${modelName} created`, true)
+      log.info(utils.magenta(`    > Routes for ${modelName} created`, true))
       resolve(utils.OK_CODE)
     })
   })
 }
 
-let generateModelTemplate = (modelName) => {
+let makeModelTemplate = (modelName, modelAttributesCode) => {
   return renderer.renderTemplate(tmplts.modelTemplate, [{
     pattern: nameList.targetNameJoker,
     value: modelName
+  }, {
+    pattern: nameList.modelAttributes,
+    value: modelAttributesCode
   }])
 }
 
-let generateControllerTemplate = (modelName) => {
+let makeControllerTemplate = (modelName, keyValueLines) => {
   return renderer.renderTemplate(tmplts.controllerTemplate, [{
     pattern: nameList.targetNameJoker,
     value: modelName
+  }, {
+    pattern: nameList.saveKeyValueLine,
+    value: keyValueLines
   }])
 }
 
-let generateRoutesTemplate = (modelName) => {
+let makeRoutesTemplate = entityName => {
   return renderer.renderTemplate(tmplts.routesTemplate, [{
     pattern: nameList.targetNameJoker,
-    value: modelName
+    value: entityName
   }])
 }
 
-let makeWonderfulTrio = (modelName) => {
+let makeWonderfulTrio = (entity, entityName) => {
   return new Promise(async (resolve, reject) => {
-    let errCtrl, errModel, errRoutes, ok
-    // generate code for the 3 entities:
-    let controllerCode = generateControllerTemplate(modelName)
-    let modelCode = generateModelTemplate(modelName)
-    let routesCode = generateRoutesTemplate(modelName)
+    // make code for the 3 entities:
+    let saveLinesCode = makeSaveLinesCode(entity)
+    let modelAttributesCode = makeModelAttributeLines(entity)
 
-    ;[errCtrl, ok] = await to(generateController(modelName, controllerCode))
-    ;[errModel, ok] = await to(generateModel(modelName, modelCode))
-    ;[errRoutes, ok] = await to(generateRoutes(modelName, routesCode))
+    let controllerCode = makeControllerTemplate(entityName, saveLinesCode)
+    let modelCode = makeModelTemplate(entityName, modelAttributesCode)
+    let routesCode = makeRoutesTemplate(entityName)
 
-    if (errCtrl || errModel || errRoutes || !ok) {
-      reject(new Error('Eror in makeWonderfulTrio()'))
-    } else {
+    try {
+      await makeController(entityName, controllerCode)
+      await makeModel(entityName, modelCode)
+      await makeRoutes(entityName, routesCode)
       resolve(utils.OK_CODE)
+    } catch (err) {
+      reject(err)
     }
   })
 }
 
-let generateTrios = (entities) => {
-  return entities.map((item, index) => {
+let makeEntityFiles = (entities) => {
+  return Object.keys(entities).map(key => {
     return new Promise(async (resolve, reject) => {
-      let err, ok
-      [err, ok] = await to(makeWonderfulTrio(entities[index]))
-
-      if (!ok) {
-        reject(err)
-      } else {
+      try {
+        await makeWonderfulTrio(entities[key], key)// key is the entity name
         resolve(utils.OK_CODE)
+      } catch (err) {
+        reject(err)
       }
     })
   })
@@ -240,9 +295,9 @@ let generateTrios = (entities) => {
 
 let makeDirectories = () => {
   fs.mkdirSync(`./${projectFolderName}`)
-  console.log(`--> Created directory ${projectFolderName}`)
+  log.info(utils.white(`--> Created directory ${projectFolderName}`, true))
   process.chdir(`./${projectFolderName}`)// change to created folder
-  console.log(`--> Changed working dir to ${projectFolderName}/`)
+  log.info(utils.white(`--> Changed working dir to ${projectFolderName}/`, true))
 
   fs.mkdirSync(`./${nameList.controllersFolder}`)
   fs.mkdirSync(`./${nameList.modelsFolder}`)
@@ -251,7 +306,7 @@ let makeDirectories = () => {
   fs.mkdirSync(`./${nameList.partialsFolder}`)
 }
 
-let generateAPITester = () => {
+let makeAPITester = () => {
   return new Promise((resolve, reject) => {
     fs.writeFile(`./${nameList.viewsFolder}/api-tester.hbs`,
     tmplts.apiTesterTemplate, err => {
@@ -265,7 +320,7 @@ let generateAPITester = () => {
   })
 }
 
-let generateAPITesterBlock = () => {
+let makeAPITesterBlock = () => {
   return new Promise((resolve, reject) => {
     // create template for item savers:
     fs.writeFile(`./${nameList.partialsFolder}/api-tester-block.hbs`,
@@ -280,7 +335,7 @@ let generateAPITesterBlock = () => {
   })
 }
 
-let generateAPITesterCSS = () => {
+let makeAPITesterCSS = () => {
   return new Promise((resolve, reject) => {
     // create template for item savers:
     fs.writeFile(`./${nameList.partialsFolder}/api-tester-css.hbs`,
@@ -296,58 +351,47 @@ let generateAPITesterCSS = () => {
 }
 
 let makeHTMLTemplates = async () => {
-  let err, ok
-
-  ;[err, ok] = await to(generateAPITester())
-  utils.handleAwaitError(ok, err)
-
-  ;[err, ok] = await to(generateAPITesterBlock())
-  utils.handleAwaitError(ok, err)
-
-  ;[err, ok] = await to(generateAPITesterCSS())
-  utils.handleAwaitError(ok, err)
+  try {
+    await makeAPITester()
+    await makeAPITesterBlock()
+    await makeAPITesterCSS()
+  } catch (err) {
+    log.error('error', err)
+  }
 }
 
-let generateStructure = async () => {
-  let err, ok
+let makeStructure = async (entities) => {
   makeDirectories()
   makeHTMLTemplates()
 
-  ;[err, ok] = await to(makeAppFile())
-  utils.handleAwaitError(ok, err)
-
-  ;[err, ok] = await to(makeIndexFile())
-  utils.handleAwaitError(ok, err)
-
-  ;[err, ok] = await to(makeDbFile())
-  utils.handleAwaitError(ok, err)
-
-  ;[err, ok] = await to(Promise.all(generateTrios(entitiesToCreate)))
-  utils.handleAwaitError(ok, err)
-
-  ;[err, ok] = await to(runNodeInstalls())
-  utils.handleAwaitError(ok, err)
+  try {
+    await makeAppFile(entities)
+    await makeIndexFile()
+    await makeDbFile()
+    await Promise.all(makeEntityFiles(entities))
+    await runNodeInstalls()
+  } catch (err) {
+    log.error('error', err)
+  }
 }
 
 let listenToServer = (child) => {
   return new Promise((resolve, reject) => {
     child.stdout.on('data', data => {
       if (data == 200) {
-        console.log(`Server listening in port ${port}`)
+        log.info(utils.white(`Server listening in port ${port}`, true))
         if (argv.open || argv.o) {
           opn(`http://localhost:${port}/api-tester`)
         } else {
-          console.log(`Call http://localhost:${port}/api-tester ` +
-            `in your browser to interact with the API`)
-          console.log(`(use --open to launch it automatically)`)
+          log.info(utils.white(`API tester: http://localhost:${port}/api-tester`, true))
         }
 
         resolve(utils.OK_CODE)
       }
     })
-    child.stderr.on('data', data => console.log(data))
+    child.stderr.on('data', data => log.info(data))
     child.on('close', code => {
-      console.log(`Exited with code ${code}`)
+      log.info(`Exited with code ${code}`)
       reject(code)
     })
   })
@@ -356,50 +400,51 @@ let listenToServer = (child) => {
 let runServer = () => {
   return new Promise(async (resolve, reject) => {
     let child = exec(`node index`)
-    let err, ok
 
-    console.log('-'.repeat(utils.dottedLineLength))
-    console.log('Starting server...')
+    log.info(utils.white('-'.repeat(utils.dottedLineLength)))
+    log.info(utils.white('Starting server...', true))
 
-    [err, ok] = await to(listenToServer(child))
-
-    if (!ok) {
-      reject(err)
-    } else {
+    try {
+      await listenToServer(child)
       resolve(utils.OK_CODE)
+    } catch (err) {
+      reject(err)
     }
   })
 }
 
 let runNodeInstalls = () => {
   return new Promise(async (resolve, reject) => {
-    let err, ok
     // setup and dependencies:
-    [err, ok] = await to(nodeSetup.init(projectFolderName))
-    if (!ok) { reject(err) } else { resolve(utils.OK_CODE) }
-
-    if (argv.run === false || argv.n) {
-      console.log(`Build OK, to start the server run 'node index' inside ` +
-      `${projectFolderName}/`)
-      console.log(`Once the server is running, ` +
-      `use http://localhost:${port}/api-tester to test your API`)
-    } else {
-      [err, ok] = await to(runServer())// last step
-
-      if (!ok) { reject(err) } else { resolve(utils.OK_CODE) }
+    try {
+      await nodeSetup.init(projectFolderName)
+      
+      if (argv.run === false || argv.n) {
+        log.info(utils.white(`Build OK, to start the server run 'node index' inside ` +
+        `${projectFolderName}/`, true))
+        log.info(utils.white(`Once the server is running, ` +
+        `use http://localhost:${port}/api-tester to test your API`, true))
+      } else {
+        await runServer()// last step
+        resolve(utils.OK_CODE) 
+      }
+    } catch (err) {
+      reject(err)
     }
   })
 }
 
 if (projectFolderName) {
   if (fs.existsSync(projectFolderName)) {
-    utils.logYellow(`WARN: Folder ${projectFolderName} ` +
-    `already exists, please use another name`, true)
+    log.error(utils.red(`Folder ${projectFolderName} ` +
+    `already exists, please use another name`, true))
   } else {
-    generateStructure()
+    makeStructure(entitiesDefinition.entities)
   }
 } else {
-  console.log('men v0.2.4')
-  console.log('Usage: men <yourProjectFolder>')
-  console.log(`men --help to see more options`)
+  let pkg = fs.readFileSync(`${__dirname}/package.json`, 'utf8')
+  let version = JSON.parse(pkg).version
+  log.info(utils.white(`men v${version}`, true))
+  log.info(utils.white('Usage: men <yourProjectFolder>', true))
+  log.info(utils.white(`men --help to see more options`, true))
 }

@@ -1,0 +1,31 @@
+<div class="api-tester-block">
+  <div>
+    <h3 class="text-center">{{entityKey}}</h3>
+  </div>
+  <div>
+    <form name="form-{{entityKey}}" method="post" onsubmit="return saveDataTo(this, '{{entityKey}}')">
+      <table class="form-table">
+        <tbody>
+          {{#each entity}}
+          <tr>
+            <td class="text-right">{{@key}}</td>
+            <td>
+              <input class="form-control" type="{{formControlTypeMapper this}}" name="{{@key}}" />
+            </td>
+          </tr>
+          {{/each}}
+          <tr>
+            <td colspan="2" class="text-right">
+              <br />
+              <button type="submit">Save new {{entityKey}}</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+  <br />
+  <div>
+    <pre class="json-container" id="json-output-for-{{entityKey}}"></pre>
+  </div>
+</div>

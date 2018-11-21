@@ -13,6 +13,12 @@ let initExpress = () => {
   app.use(bodyParser.json())
   app.set('view engine', 'hbs')
   hbs.registerPartials(__dirname + '/views/partials')
+  hbs.registerHelper('formControlTypeMapper', value => {
+    if (value == 'String')  return 'text'
+    if (value == 'Number')  return 'number'
+    if (value == 'Boolean') return 'checkbox'
+    if (value == 'Date')    return 'date'
+  })
 
   // import routes:
 
@@ -37,7 +43,7 @@ let initExpress = () => {
   // special route for the API tester:
 
   app.get('/api-tester', function attachRoutesExpress (req, res) {
-    res.status(200).render('api-tester', { items: [__targetEntitiesList__] })
+    res.status(200).render('api-tester', { entities: __targetEntityList__ })
   })
 }
 

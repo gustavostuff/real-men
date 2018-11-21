@@ -1,6 +1,6 @@
 let init = () => {
   let argv = require('yargs')
-    .command('--entities', 'Specifies a list of entities separated by commas (no spaces!)\nalias: -e', {
+    .command('--entities', 'Specifies a list of entities separated by commas (no spaces!) or a json config file\nalias: -e', {
       entities: {
         alias: '-e'
       }
@@ -20,7 +20,7 @@ let init = () => {
         alias: '-o'
       }
     })
-    .command('--no-run', 'To not run the server when the build is finished\nalias: -n', {
+    .command('--no-run', 'To not run the server (and to not create the DB) when the build is finished\nalias: -n', {
       database: {
         alias: '-n'
       }

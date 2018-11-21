@@ -1,0 +1,10 @@
+'use strict'
+
+let express = require('express')
+let __targetNameJoker__Controller = require('../controllers/__targetNameJoker__.controller')
+let api = express.Router()
+
+api.get('/getDataFrom__targetNameJoker__', __targetNameJoker__Controller.getDataFrom__targetNameJoker__)
+api.post('/saveDataTo__targetNameJoker__', __targetNameJoker__Controller.saveDataTo__targetNameJoker__)
+
+module.exports = api

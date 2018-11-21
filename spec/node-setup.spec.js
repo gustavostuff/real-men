@@ -1,4 +1,4 @@
-const nodeSetup = require('../node-setup')
+const nodeSetup = require('../src/node-setup')
 
 describe('Checks for the expected functions in  node-setup.js', () => {
   it('nodeSetup.getList().init should exist', () => {
