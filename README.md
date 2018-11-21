@@ -3,7 +3,7 @@
 Dynamic MEN-stack boilerplate generator with a few [handlebars](https://handlebarsjs.com/)
 
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/tavuntu/real-men/blob/master/LICENSE.md)
-[![Version](http://img.shields.io/:npm-1.0.1-blue.svg)](https://www.npmjs.com/package/real-men)
+[![Version](http://img.shields.io/:npm-1.0.2-green.svg)](https://www.npmjs.com/package/real-men)
 
 ### Install
 

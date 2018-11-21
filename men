@@ -29,7 +29,7 @@ if ((argv.run === false || argv.n) && (argv.open || argv.o)) {
 let projectFolderName = argv._[0]// this is the only required command
 let defaultModelName = 'MyItem'
 let entitiesDefinition = []
-let entities = (argv.entities || argv.e).toString()
+let entities = ((argv.entities || argv.e) || '').toString()
 
 if (entities) {  
 
