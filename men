@@ -46,7 +46,7 @@ if (entities) {
     entitiesDefinition = obj
 
   } else {// advanced config file:
-    let content = fs.readFileSync('data.json', 'utf8')
+    let content = fs.readFileSync(entities, 'utf8')
     entitiesDefinition = JSON.parse(content)
   }
 
