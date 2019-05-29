@@ -1,13 +1,13 @@
 'use strict'
 
-let __targetNameJoker__ = require('../models/__targetNameJoker__.model')
+const __targetNameJoker__ = require('../models/__targetNameJoker__.model')
 
-let getDataFrom__targetNameJoker__ = (request, response) => {
+const getAllFrom__targetNameJoker__ = (request, response) => {
   __targetNameJoker__.find({}, (err, data) => {
     if (err) {
       response.status(500).send({
         msg: JSON.stringify(err),
-        error: 'Error in getDataFrom__targetNameJoker__()' 
+        error: 'Error in getAllFrom__targetNameJoker__()' 
       })
     } else {
       if (!data) {
@@ -21,12 +21,24 @@ let getDataFrom__targetNameJoker__ = (request, response) => {
   })
 }
 
-let saveDataTo__targetNameJoker__ = (request, response) => {
-  let new__targetNameJoker__ = new __targetNameJoker__({
+const getOne__targetNameJoker__ = (request, response) => {
+  const _id = request.query._id
+
+  __targetNameJoker__.findById(_id, (err, item) => {
+    if (err) {
+      return response.status(500).send('Error finding __targetNameJoker__ object')
+    }
+
+    response.status(200).json(item)
+  })
+}
+
+const saveNew__targetNameJoker__ = (request, response) => {
+  const new__targetNameJoker__ = new __targetNameJoker__({
     __saveKeyValueLine__
   })
 
-  new__targetNameJoker__.save(function errorSaveDataTo (err) {
+  new__targetNameJoker__.save(err => {
     if (err) {
       response.status(500).send('Error saving new __targetNameJoker__ object')
       return
@@ -38,7 +50,44 @@ let saveDataTo__targetNameJoker__ = (request, response) => {
   })
 }
 
+const update__targetNameJoker__ = (request, response) => {
+  const _id = request.query._id
+
+  __targetNameJoker__.findByIdAndUpdate(_id, request.body, {
+      new: true,
+      useFindAndModify: false
+    }, (err, updated) => {
+    
+    if (err) {
+      return response.status(500).send('Error updating __targetNameJoker__ object')
+    }
+
+    response.status(200).json({
+      error: false,
+      msg: `__targetNameJoker__ with id ${_id} updated successfully`,
+      new__targetNameJoker__: updated
+    })
+  })
+}
+
+const delete__targetNameJoker__ = (request, response) => {
+  const _id = request.query._id
+
+  __targetNameJoker__.findByIdAndDelete(_id, err => {
+    if (err) {
+      return response.status(500).send('Error deleting __targetNameJoker__ object')
+    }
+
+    response.status(200).json({
+      error: false, msg: `__targetNameJoker__ with id ${_id} deleted successfully`
+    })
+  })
+}
+
 module.exports = {
-  getDataFrom__targetNameJoker__,
-  saveDataTo__targetNameJoker__
+  getAllFrom__targetNameJoker__
+  ,getOne__targetNameJoker__
+  ,saveNew__targetNameJoker__
+  ,update__targetNameJoker__
+  ,delete__targetNameJoker__
 }

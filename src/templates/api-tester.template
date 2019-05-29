@@ -9,54 +9,179 @@
 <body>
 <h2><img alt="REAL-MEN" src="https://i.postimg.cc/W1PCGd0h/logo-real-men.png" /> API tester</h2>
 <div class="container">
-  <div class="row">
   {{#each entities}}
-    <div class="col">
     {{> api_tester_block entityKey=@key entity=this}}
-    </div>
   {{/each}}
-  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js"></script>
 <script type="text/javascript">
-  function getJsonOutput(entity) {
-    return document.getElementById('json-output-for-' + entity)
+  editBox = {}
+
+  const getListElement = entity => {
+    return document.querySelector(`#list-for-${entity}`)
   }
 
-  function saveDataTo(form, entity) {
-    var data = {}
-    // get form data:
-    for (let control of form) {
-      if (control.type != 'submit') {
-        if (control.type == 'checkbox') {
-          data[control.name] = control.checked
-        } else {
-          data[control.name] = control.value
+  const resetForm = entity => {
+    document.querySelector(`form[name="form-${entity}"]`).reset()
+  }
+
+  const saveNew = (form, entity) => {
+    let data = mapFormToData(form)
+
+    if (confirm(`Do you want to save this? ${JSON.stringify(data, null, 2)}`)) {
+      axios.post(`/api/saveNew${entity}`, data).then(
+        response => {
+          alert('Saved successfully')
+          resetForm(entity)
+          refreshEditControls(entity)
+          getAllFrom(entity)
         }
+      ).catch(error => console.error(error))
+    }
+
+    return false // avoid form submission (page refresh)
+  }
+
+  const update = (form, entity) => {
+    let data = mapFormToData(form)
+    let _id = editBox[entity]._id
+
+    if (confirm(`Do you want to update this? ${JSON.stringify(data, null, 2)}`)) {
+      axios.put(`/api/update${entity}`, data, { params : { _id } }).then(
+        response => {
+          alert('Updated successfully')
+          delete editBox[entity]
+          resetForm(entity)
+          refreshEditControls(entity)
+          getAllFrom(entity)
+        }
+      ).catch(error => console.error(error))
+    }
+  }
+
+  const getAllFrom = entity => {
+    axios.get(`/api/getAllFrom${entity}`).then(response => {
+      var target = getListElement(entity)
+      
+      let outputHTML = ''
+
+      for (let item of response.data) {
+        outputHTML += `
+          <div class="item-div">
+            <label class="cursor-pointer" onclick="showItem('${entity}', '${item._id}')">
+              ...${item._id.slice(item._id.length - 8)}
+            </label>
+            <button title="Edit" onclick="editItem('${entity}', '${item._id}')">
+              &#9998;
+            </button>
+            <button
+              onclick="deleteItem('${entity}', '${item._id}')"
+              title="Delete"
+              class="red">
+            &#10006;</button>
+          </div>
+        `
+      }
+
+      target.innerHTML = outputHTML
+    }).catch(error => console.error(error))
+  }
+
+  const getForm = entity => {
+    return document.querySelector(`form[name=form-${entity}]`)
+  }
+
+  const editItem = (entity, _id) => {
+    let form = getForm(entity)
+
+    getItem(entity, _id).then(data => {
+      mapDataToForm(data, form)
+      editBox[entity] = data
+      refreshEditControls(entity)
+    }).catch(error => console.error(error))
+  }
+
+  const refreshEditControls = entity => {
+    let saveBtn = document.querySelector(`form[name="form-${entity}"] .save-btn`)
+    let cancelBtn = document.querySelector(`form[name="form-${entity}"] .cancel-btn`)
+    let updateBtn = document.querySelector(`form[name="form-${entity}"] .update-btn`)
+    let list = document.querySelector(`#list-for-${entity}`)
+
+    if (editBox[entity]) {
+      saveBtn.classList.add('hidden')
+      list.classList.add('hidden')
+      cancelBtn.classList.remove('hidden')
+      updateBtn.classList.remove('hidden')
+    } else {
+      saveBtn.classList.remove('hidden')
+      list.classList.remove('hidden')
+      cancelBtn.classList.add('hidden')
+      updateBtn.classList.add('hidden')
+    }
+  }
+
+  const cancelEditing = entity => {
+    delete editBox[entity]
+    refreshEditControls(entity)
+
+    resetForm(entity)
+  }
+
+  const getItem = (entity, _id) => {
+    return new Promise((resolve, reject) => {
+      axios.get(`/api/getOne${entity}`, { params : { _id } }).then(response => {
+        resolve(response.data)
+      }).catch(error => reject(error))
+    })
+  }
+
+  const showItem = (entity, _id) => {
+    getItem(entity, _id).then(data => {
+      alert(`A ${entity}: ${JSON.stringify(data, null, 2)}`)
+    }).catch(error => console.error(error))
+  }
+
+  const deleteItem = (entity, _id) => {
+    if (confirm(`Delete ${entity} with id ${_id}?`)) {
+      axios.delete(`/api/delete${entity}`, { params : { _id } }).then(
+        response => {
+          getAllFrom(entity)
+          alert(response.data.msg)
+        }
+      ).catch(error => console.error(error))
+    }
+  }
+
+  const mapFormToData = form => {
+    let data = {}
+
+    for (let control of Array.from(form)) {
+      if (control.className == 'form-control') {
+        data[control.name] = control.type == 'checkbox' ? control.checked : control.value
       }
     }
 
-    if (confirm('Do you want to save this?\n' + JSON.stringify(data, null, 2))) {
-      axios.post('/api/saveDataTo' + entity, data).then(function saveDataToCB (response) {
-        var target = getJsonOutput(entity)
-        getDataFrom(entity)
-      }).catch(function errorSaveDataTo (error) { console.error(error) })
-    }
-
-    return false// avoid form submission (page refresh)
+    return data
   }
 
-  function getDataFrom(entity) {
-    axios.get('/api/getDataFrom' + entity).then(function getDataFromCB (response) {
-      var target = getJsonOutput(entity)
-      target.innerHTML = JSON.stringify(response.data, null, 2)
-    }).catch(function errorgetDataFrom (error) { console.error(error) })
+  const mapDataToForm = (data, form) => {
+    ;[...form.elements].forEach(control => {
+      if (control.type != 'submit') {
+        let val = data[control.name]
+
+        if (control.type == 'date' && val) {
+          val = val.split('T')[0] // get date only
+        }
+
+        control[control.type == 'checkbox' ? 'checked' : 'value'] = val
+      }
+    })
   }
 
   // load data when loading the page:
   {{#each entities}}
-  getDataFrom('{{@key}}')
+  getAllFrom('{{@key}}')
   {{/each}}
 </script>
 </body>

@@ -3,7 +3,7 @@
     <h3 class="text-center">{{entityKey}}</h3>
   </div>
   <div>
-    <form name="form-{{entityKey}}" method="post" onsubmit="return saveDataTo(this, '{{entityKey}}')">
+    <form name="form-{{entityKey}}" method="post" onsubmit="return saveNew(this, '{{entityKey}}')">
       <table class="form-table">
         <tbody>
           {{#each entity}}
@@ -13,23 +13,22 @@
               {{#if (formControlTypeMapper this)}}
                 <input class="form-control" type="{{formControlTypeMapper this}}" name="{{@key}}" />
               {{else}}
-                (not supported)
+                (type not supported)
               {{/if}}
             </td>
           </tr>
           {{/each}}
           <tr>
-            <td colspan="2" class="text-right">
-              <br />
-              <button type="submit">Save new {{entityKey}}</button>
+            <td>&nbsp;</td>
+            <td>
+              <button class="save-btn green" type="submit">Save new {{entityKey}}</button>
+              <button class="cancel-btn gray hidden" type="button" onclick="cancelEditing('{{entityKey}}')">Cancel</button>
+              <button class="update-btn hidden" type="button" onclick="update(getForm('{{entityKey}}'), '{{entityKey}}')">Update {{entityKey}}</button>
             </td>
           </tr>
         </tbody>
       </table>
     </form>
   </div>
-  <br />
-  <div>
-    <pre class="json-container" id="json-output-for-{{entityKey}}"></pre>
-  </div>
+  <div class="output-div" id="list-for-{{entityKey}}"></div>
 </div>

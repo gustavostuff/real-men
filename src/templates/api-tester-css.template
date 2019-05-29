@@ -2,13 +2,8 @@ body {
   font-family: monospace;
   font-size: 1.2em;}
 
-.row {
-  overflow: auto;
-  width: 100%;}
-
-.col {
-  width: 100%;
-  display: inline-block;}
+.hidden {
+  display: none;}
 
 .api-tester-block {
   border: 1px solid #aaaaaa;
@@ -16,26 +11,42 @@ body {
   width: 100%;
   margin-bottom: 4px;
   padding: 4px;
-  box-sizing: border-box;
-  display: inline-block;}
+  box-sizing: border-box;}
 
 .api-tester-block button {
   background-color: #007bff;
   color: #ffffff;
+  cursor: pointer;
   border: none;
   border-radius: 4px;
-  padding: 4px;}
+  padding: 4px 8px;}
 
-.api-tester-block button:hover {
-  background-color: #3a99ff;}
+.api-tester-block button.red {
+  background-color: #dc3545;}
 
-.json-container {
+.api-tester-block button.yellow {
+  color: #000000;
+  background-color: #ffc107;}
+
+.api-tester-block button.green {
+  background-color: #28a745;}
+
+.api-tester-block button.gray {
+  background-color: #6c757d;}
+
+.output-div {
+  max-height: 150px;
+  overflow-y: auto;}
+
+.item-div {
+  display: inline-block;
   border: 1px solid #aaaaaa;
   border-radius: 4px;
   padding: 4px;
-  background-color: #eeeeee;
-  margin-bottom: 0;
-  overflow: auto;}
+  margin: 4px;}
+
+.cursor-pointer {
+  cursor: pointer;}
 
 .text-center {
   text-align: center;}
@@ -47,16 +58,19 @@ body {
   width: 100%;}
 
 .form-control[type="checkbox"] {
-  width: auto;
-}
+  width: auto;}
 
 .form-table {
   width: 90%;
+  padding-bottom: 20px;
   table-layout: fixed;
   margin-left: auto;
   margin-right: auto;}
 
 .container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-gap: 10px;
   width: 100%;
   overflow: auto;
   padding: 4px;
@@ -64,13 +78,3 @@ body {
 
 h4 {
   margin-top: 4px;}
-
-@media only screen and (min-width: 768px) {
-  .col {
-  width: 33.33%;}
-}
-
-@media only screen and (min-width: 1280px) {
-  .col {
-  width: 20%;}
-}
