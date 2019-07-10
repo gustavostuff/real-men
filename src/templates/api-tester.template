@@ -3,14 +3,16 @@
 <head>
   <title>real-men API tester</title>
   <style>
-    {{> api_tester_css}}
+    {{> api-tester-css}}
   </style>
 </head>
 <body>
-<h2><img alt="REAL-MEN" src="https://i.postimg.cc/W1PCGd0h/logo-real-men.png" /> API tester</h2>
+<h2 class="text-center">
+<img alt="REAL-MEN" src="https://i.postimg.cc/W1PCGd0h/logo-real-men.png" /> API tester
+</h2>
 <div class="container">
   {{#each entities}}
-    {{> api_tester_block entityKey=@key entity=this}}
+    {{> api-tester-block entityKey=@key entity=this}}
   {{/each}}
 </div>
 
@@ -69,7 +71,7 @@
       for (let item of response.data) {
         outputHTML += `
           <div class="item-div">
-            <label class="cursor-pointer" onclick="showItem('${entity}', '${item._id}')">
+            <label title="click to see the document" class="id-label cursor-pointer" onclick="showItem('${entity}', '${item._id}')">
               ...${item._id.slice(item._id.length - 8)}
             </label>
             <button title="Edit" onclick="editItem('${entity}', '${item._id}')">

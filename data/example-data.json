@@ -1,0 +1,21 @@
+{
+  "entities": {
+    "user": {
+      "name": "String",
+      "email": "String",
+      "age": "Number"
+    },
+    "cat": {
+      "isItAJerk": "Boolean",
+      "catName": "String"
+    },
+    "cow": {
+      "isItHoly": "Boolean",
+      "birthday": "Date"
+    },
+    "coffee": {
+      "isDecaf": "Boolean",
+      "hasMilk": "Boolean"
+    }
+  }
+}

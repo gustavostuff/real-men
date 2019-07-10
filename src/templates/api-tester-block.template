@@ -19,11 +19,10 @@
           </tr>
           {{/each}}
           <tr>
-            <td>&nbsp;</td>
-            <td>
-              <button class="save-btn green" type="submit">Save new {{entityKey}}</button>
+            <td colspan="2" class="text-center">
+              <button class="save-btn green" type="submit">Save</button>
               <button class="cancel-btn gray hidden" type="button" onclick="cancelEditing('{{entityKey}}')">Cancel</button>
-              <button class="update-btn hidden" type="button" onclick="update(getForm('{{entityKey}}'), '{{entityKey}}')">Update {{entityKey}}</button>
+              <button class="update-btn hidden" type="button" onclick="update(getForm('{{entityKey}}'), '{{entityKey}}')">Update</button>
             </td>
           </tr>
         </tbody>

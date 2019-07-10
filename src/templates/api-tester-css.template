@@ -5,12 +5,15 @@ body {
 .hidden {
   display: none;}
 
+.id-label {
+  color: #007bff;
+}
+
 .api-tester-block {
   border: 1px solid #aaaaaa;
   border-radius: 4px;
   width: 100%;
   margin-bottom: 4px;
-  padding: 4px;
   box-sizing: border-box;}
 
 .api-tester-block button {
@@ -39,7 +42,7 @@ body {
   overflow-y: auto;}
 
 .item-div {
-  display: inline-block;
+  text-align: center;
   border: 1px solid #aaaaaa;
   border-radius: 4px;
   padding: 4px;

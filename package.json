@@ -1,7 +1,7 @@
 {
   "name": "real-men",
   "version": "1.1.1",
-  "description": "Dynamic MEN-stack boilerplate generator with a few handlebars",
+  "description": "MEN stack API generator",
   "bin": {
     "men": "./men"
   },
@@ -25,11 +25,9 @@
   },
   "homepage": "https://github.com/tavuntu/real-men#readme",
   "dependencies": {
-    "hbs": "^4.0.4",
     "jasmine-node": "^3.0.0",
-    "npmlog": "^4.1.2",
-    "opn": "^5.4.0",
-    "yargs": "^12.0.2"
+    "opn": "^5.5.0",
+    "yargs": "^12.0.5"
   },
   "devDependencies": {
     "growl": "^1.10.5"

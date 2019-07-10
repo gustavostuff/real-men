@@ -8,7 +8,6 @@
   const names = require('./src/names')
   const template = require('./src/template')
   const yargs = require('./src/yargs')
-  const log = require('npmlog')
   const { getErrors } = require('./src/entity-validator')
 
   const exec = require('child_process').exec
@@ -17,14 +16,12 @@
 
   const nameList = names.getList()
 
-  log.enableColor()
-
   // yargs params stuff:
 
   const argv = yargs.init()
 
   if ((argv.run === false || argv.n) && (argv.open || argv.o)) {
-    log.warn(utils.yellow(`--open can't be used if --no-run is present`, true))
+    utils.yellow(`--open can't be used if --no-run is present`, true)
   }
 
   let projectFolderName = argv._[0]// this is the only required command
@@ -55,7 +52,7 @@
     let errors = getErrors(entitiesDefinition)
 
     if (errors) {
-      log.error('Errors found:\n' + errors)
+      utils.red('Errors found:\n' + errors, true)
       return
     } else {
       // capitalize entity names:
@@ -151,7 +148,7 @@
           return
         }
 
-        log.info(utils.white('--> Created app.js', true))
+        utils.white('--> Created app.js', true)
         resolve(utils.OK_CODE)
       })
     })
@@ -168,7 +165,7 @@
           return
         }
 
-        log.info(utils.white('--> Created db.js', true))
+        utils.white('--> Created db.js', true)
         resolve(utils.OK_CODE)
       })
     })
@@ -185,7 +182,7 @@
           return
         }
 
-        log.info(utils.white('--> Created index.js', true))
+        utils.white('--> Created index.js', true)
         resolve(utils.OK_CODE)
       })
     })
@@ -199,7 +196,7 @@
           reject(err)
           return
         }
-        log.info(utils.green(`    > Controller for ${modelName} created`, true))
+        utils.white(`  * Controller for ${modelName} created`, true)
         resolve(utils.OK_CODE)
       })
     })
@@ -213,7 +210,7 @@
           reject(err)
           return
         }
-        log.info(utils.blue(`    > Model for ${modelName} created`, true))
+        utils.white(`    > Model for ${modelName} created`, true)
         resolve(utils.OK_CODE)
       })
     })
@@ -227,7 +224,7 @@
           reject(err)
           return
         }
-        log.info(utils.magenta(`    > Routes for ${modelName} created`, true))
+        utils.white(`      + Routes for ${modelName} created`, true)
         resolve(utils.OK_CODE)
       })
     })
@@ -296,9 +293,9 @@
 
   let makeDirectories = () => {
     fs.mkdirSync(`./${projectFolderName}`)
-    log.info(utils.white(`--> Created directory ${projectFolderName}`, true))
+    utils.white(`--> Created directory ${projectFolderName}`, true)
     process.chdir(`./${projectFolderName}`)// change to created folder
-    log.info(utils.white(`--> Changed working dir to ${projectFolderName}/`, true))
+    utils.white(`--> Changed working dir to ${projectFolderName}/`, true)
 
     fs.mkdirSync(`./${nameList.controllersFolder}`)
     fs.mkdirSync(`./${nameList.modelsFolder}`)
@@ -357,7 +354,7 @@
       await makeAPITesterBlock()
       await makeAPITesterCSS()
     } catch (err) {
-      log.error('error', err)
+      utils.red(err)
     }
   }
 
@@ -372,7 +369,7 @@
       await Promise.all(makeEntityFiles(entities))
       await runNodeInstalls()
     } catch (err) {
-      log.error('error', err)
+      utils.red(err, true)
     }
   }
 
@@ -380,19 +377,19 @@
     return new Promise((resolve, reject) => {
       child.stdout.on('data', data => {
         if (data == 200) {
-          log.info(utils.white(`Server listening in port ${port}`, true))
+          utils.white(`Server listening in port ${port}`, true)
           if (argv.open || argv.o) {
             opn(`http://localhost:${port}/api-tester`)
           } else {
-            log.info(utils.white(`API tester: http://localhost:${port}/api-tester`, true))
+            utils.white(`API tester: http://localhost:${port}/api-tester`, true)
           }
 
           resolve(utils.OK_CODE)
         }
       })
-      child.stderr.on('data', data => log.info(data))
+      child.stderr.on('data', data => utils.red(data, true))
       child.on('close', code => {
-        log.info(`Exited with code ${code}`)
+        utils.white(`Exited with code ${code}`, true)
         reject(code)
       })
     })
@@ -402,8 +399,8 @@
     return new Promise(async (resolve, reject) => {
       let child = exec(`node index`)
 
-      log.info(utils.white('-'.repeat(utils.dottedLineLength)))
-      log.info(utils.white('Starting server...', true))
+      utils.white('-'.repeat(utils.dottedLineLength))
+      utils.white('Starting server...', true)
 
       try {
         await listenToServer(child)
@@ -420,10 +417,10 @@
       try {
         await nodeSetup.init(projectFolderName)
         if (argv.run === false || argv.n) {
-          log.info(utils.white(`Build OK, to start the server run 'node index' inside ` +
-          `${projectFolderName}/`, true))
-          log.info(utils.white(`Once the server is running, ` +
-          `use http://localhost:${port}/api-tester to test your API`, true))
+          utils.white(`Build OK, to start the server run 'node index' inside ` +
+          `${projectFolderName}/`, true)
+          utils.white(`Once the server is running, ` +
+          `use http://localhost:${port}/api-tester to test your API`, true)
         } else {
           await runServer()// last step
           resolve(utils.OK_CODE)
@@ -436,16 +433,15 @@
 
   if (projectFolderName) {
     if (fs.existsSync(projectFolderName)) {
-      log.error(utils.red(`Folder ${projectFolderName} ` +
-      `already exists, please use another name`, true))
+      utils.red(`Folder ${projectFolderName} already exists, please use another name`, true)
     } else {
       makeStructure(entitiesDefinition.entities)
     }
   } else {
     let pkg = fs.readFileSync(`${__dirname}/package.json`, 'utf8')
     let version = JSON.parse(pkg).version
-    log.info(utils.white(`men v${version}`, true))
-    log.info(utils.white('Usage: men <yourProjectFolder>', true))
-    log.info(utils.white(`men --help to see more options`, true))
+    utils.white(`men v${version}`, true)
+    utils.white('Usage: men <yourProjectFolder>', true)
+    utils.white(`men --help to see more options`, true)
   }
 })()

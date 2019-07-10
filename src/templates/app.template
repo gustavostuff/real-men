@@ -3,7 +3,7 @@
 // some default config here, ready for you to customize it:
 
 const express = require("express")
-const hbs = require("hbs")
+const hbs = require("express-hbs")
 const bodyParser = require("body-parser")
 
 const app = express()
@@ -11,8 +11,12 @@ const app = express()
 let initExpress = () => {
   app.use(bodyParser.urlencoded({ extended: false }))
   app.use(bodyParser.json())
+  app.engine('hbs', hbs.express4({
+    partialsDir: __dirname + '/views/partials'
+  }))
   app.set('view engine', 'hbs')
-  hbs.registerPartials(__dirname + '/views/partials')
+  //app.set('views', __dirname + '/views')
+
   hbs.registerHelper('formControlTypeMapper', value => {
     if (value == 'String')  return 'text'
     if (value == 'Number')  return 'number'
