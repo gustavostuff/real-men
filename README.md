@@ -1,4 +1,4 @@
-[![logo-real-men-courier.png](https://github.com/tavuntu/real-men/tree/master/assets/img/logo-real-men-courier.png)](https://github.com/tavuntu/real-men/tree/master/assets/img/logo-real-men-courier.png)
+[![logo-real-men-courier.png](https://raw.githubusercontent.com/tavuntu/real-men/master/src/assets/img/logo-real-men-courier.png)](https://raw.githubusercontent.com/tavuntu/real-men/master/src/assets/img/logo-real-men-courier.png)
 
 MEN stack API generator
 
