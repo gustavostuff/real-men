@@ -1,6 +1,6 @@
 {
   "name": "real-men",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "MEN stack API generator",
   "bin": {
     "men": "./men"
