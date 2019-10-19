@@ -1,9 +1,9 @@
-[![real-men.png](https://i.postimg.cc/K8qSDHs2/real-men.png)](https://postimg.cc/LJ1bHNpC)
+[![logo-real-men-courier.png](https://github.com/tavuntu/real-men/tree/master/assets/img/logo-real-men-courier.png)](https://github.com/tavuntu/real-men/tree/master/assets/img/logo-real-men-courier.png)
 
 MEN stack API generator
 
 [![License](http://img.shields.io/:license-MIT-blue.svg)](https://github.com/tavuntu/real-men/blob/master/LICENSE.md)
-[![Version](http://img.shields.io/:npm-1.1.1-green.svg)](https://www.npmjs.com/package/real-men)
+[![Version](http://img.shields.io/:npm-1.1.3-green.svg)](https://www.npmjs.com/package/real-men)
 
 ### Installation
 
