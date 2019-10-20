@@ -8,7 +8,7 @@
 </head>
 <body>
 <h2 class="text-center">
-<img alt="REAL-MEN" src="https://i.postimg.cc/W1PCGd0h/logo-real-men.png" /> API tester
+<img alt="REAL-MEN" src="https://i.postimg.cc/vmJhbcL6/real-men.png" /> API tester
 </h2>
 <div class="container">
   {{#each entities}}
