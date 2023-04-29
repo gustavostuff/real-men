@@ -27,7 +27,7 @@
   "dependencies": {
     "jasmine-node": "^3.0.0",
     "opn": "^5.5.0",
-    "yargs": "^12.0.5"
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "growl": "^1.10.5"
